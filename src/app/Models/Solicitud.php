@@ -8,9 +8,11 @@ use App\Enums\RazonAsesoria;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Concerns\PerteneceAFacultad;
 
 class Solicitud extends Model
 {
+    use PerteneceAFacultad;
     protected $table = 'solicitudes';
 
     protected $fillable = [

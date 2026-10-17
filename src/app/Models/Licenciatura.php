@@ -2,16 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PerteneceAFacultad;
 use Illuminate\Database\Eloquent\Model;
 
 class Licenciatura extends Model
 {
+    use PerteneceAFacultad;
+
     protected $table = 'licenciaturas';
 
-    protected $fillable = ['facultad_id', 'nombre', 'siglas', 'duracion_semestres', 'activa'];
-
-    protected function casts(): array
-    {
-        return ['activa' => 'boolean'];
-    }
+    protected $fillable = ['facultad_id', 'nombre'];
 }

@@ -55,12 +55,29 @@ class Usuario extends Authenticatable
 
     public function tieneRol(Rol $rol): bool
     {
-        return $this->roles->contains(fn (UsuarioRol $r) => $r->rol === $rol);
+        return $this->roles->contains(fn (UsuarioRol $r) => $r->rol_id === $rol);
+    }
+
+    public function esSuperAdmin(): bool
+    {
+        return $this->tieneRol(Rol::SuperAdmin);
+    }
+
+    public function asignarRol(Rol $rol): void
+    {
+         $this->roles()->firstOrCreate(['rol_id' => $rol->value]);
+        // Descarta la relación ya cargada para que tieneRol() vea el rol nuevo
+        $this->unsetRelation('roles');
     }
 
     // Laravel manda los correos a la columna "correo", no a "email"
     public function routeNotificationForMail(): string
     {
         return $this->correo;
+    }
+
+    public function disponibilidadModalidades(): HasMany
+    {
+        return $this->hasMany(DisponibilidadModalidad::class, 'asesor_id');
     }
 }

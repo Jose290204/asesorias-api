@@ -10,7 +10,7 @@ return new class extends Migration
 {
     Schema::create('usuarios', function (Blueprint $table) {
         $table->id();
-        $table->foreignId('facultad_id')->nullable()->constrained('facultades');
+        $table->foreignId('facultad_id')->constrained('facultades');
         $table->string('estatus', 20)->default('pendiente');
         $table->string('nombre', 60);
         $table->string('apellido_paterno', 60);

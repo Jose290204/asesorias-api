@@ -3,18 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Materia extends Model
 {
     protected $table = 'materias';
 
-    protected $fillable = [
-        'facultad_id', 'plan_estudios_id', 'licenciatura_id',
-        'nombre', 'semestre', 'activa',
-    ];
+    protected $fillable = ['licenciatura_id', 'plan_estudio_id', 'semestre', 'nombre'];
 
-    protected function casts(): array
+    public function licenciatura(): BelongsTo
     {
-        return ['activa' => 'boolean'];
+        return $this->belongsTo(Licenciatura::class);
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(PlanEstudios::class, 'plan_estudio_id');
     }
 }

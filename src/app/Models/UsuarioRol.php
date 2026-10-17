@@ -10,11 +10,11 @@ class UsuarioRol extends Model
 {
     protected $table = 'usuario_roles';
 
-    protected $fillable = ['usuario_id', 'rol'];
+    protected $fillable = ['usuario_id', 'rol_id'];
 
     protected function casts(): array
     {
-        return ['rol' => Rol::class];
+        return ['rol_id' => Rol::class];
     }
 
     public function usuario(): BelongsTo

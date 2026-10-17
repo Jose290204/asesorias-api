@@ -11,10 +11,11 @@ return new class extends Migration
     Schema::create('usuario_roles', function (Blueprint $table) {
         $table->id();
         $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
-        $table->string('rol', 20)->index();
+        $table->unsignedTinyInteger('rol_id');
         $table->timestamps();
 
-        $table->unique(['usuario_id', 'rol']);
+        $table->foreign('rol_id')->references('id')->on('roles');
+        $table->unique(['usuario_id', 'rol_id']);
     });
 }
 

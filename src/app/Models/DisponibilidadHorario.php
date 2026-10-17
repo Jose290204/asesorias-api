@@ -5,9 +5,11 @@ namespace App\Models;
 use App\Enums\Dia;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\PerteneceAFacultad;
 
 class DisponibilidadHorario extends Model
 {
+    use PerteneceAFacultad;
     protected $table = 'disponibilidad_horarios';
 
     protected $fillable = ['facultad_id', 'asesor_id', 'dia', 'horario_id'];

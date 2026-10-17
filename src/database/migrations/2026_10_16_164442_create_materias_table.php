@@ -6,20 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('materias', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('licenciatura_id')->constrained('licenciaturas');
+            $table->foreignId('plan_estudio_id')->constrained('plan_estudios');
+            // Número de semestre en que se cursa la materia
+            $table->unsignedTinyInteger('semestre');
+            $table->string('nombre', 150);
             $table->timestamps();
+
+            // Índice para las búsquedas del front (materias de un plan y licenciatura)
+            $table->index(['licenciatura_id', 'plan_estudio_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('materias');

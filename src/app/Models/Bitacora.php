@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Concerns\PerteneceAFacultad;
 use Throwable;
 
 class Bitacora extends Model
 {
+    use PerteneceAFacultad;
     use MassPrunable;
 
     protected $table = 'bitacora';

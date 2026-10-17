@@ -3,15 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Grupo extends Model
 {
     protected $table = 'grupos';
 
-    protected $fillable = ['facultad_id', 'licenciatura_id', 'nombre', 'activo'];
+    protected $fillable = ['licenciatura_id', 'nombre'];
 
-    protected function casts(): array
+    public function licenciatura(): BelongsTo
     {
-        return ['activo' => 'boolean'];
+        return $this->belongsTo(Licenciatura::class);
     }
 }

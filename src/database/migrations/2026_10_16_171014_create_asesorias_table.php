@@ -13,7 +13,7 @@ return new class extends Migration
         $table->foreignId('facultad_id')->constrained('facultades');
         $table->foreignId('ciclo_escolar_id')->constrained('ciclos_escolares');
         $table->foreignId('grupo_id')->nullable()->constrained('grupos');
-        $table->foreignId('solicitud_id')->unique()->constrained('solicitudes');
+        $table->foreignId('solicitud_id')->nullable()->unique()->constrained('solicitudes');
         $table->foreignId('estudiante_id')->constrained('usuarios');
         $table->foreignId('asesor_id')->constrained('usuarios');
         $table->foreignId('materia_id')->constrained('materias');

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PerteneceAFacultad;
 use App\Enums\EstatusAsesoria;
 use App\Enums\Modalidad;
 use App\Enums\RazonAsesoria;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Asesoria extends Model
 {
+    use PerteneceAFacultad;
     protected $table = 'asesorias';
 
     protected $fillable = [

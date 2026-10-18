@@ -1,8 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 
 // Temporal: confirma que la API responde y que la zona horaria es la correcta
 Route::get('ping', fn () => response()->json([

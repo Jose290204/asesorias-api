@@ -81,4 +81,17 @@ class Usuario extends Authenticatable
     {
         return $this->hasMany(DisponibilidadModalidad::class, 'asesor_id');
     }
+
+    //un usuario (asesor) tiene muchas filas en disponibilidad_materias
+    //asesor_id en el nombre real de la llave foranea, sin el laravel buscaria 'usuario_id'
+    public function disponibilidadMaterias(): HasMany
+    {
+        return $this->hasMany(DisponibilidadMateria::class, 'asesor_id');
+    }
+
+    // lo mismo de arriba, pero para las filas día + horario de disponibilidad_horarios
+    public function disponibilidadHorarios(): HasMany
+    {
+        return $this->hasMany(DisponibilidadHorario::class, 'asesor_id');
+    }
 }

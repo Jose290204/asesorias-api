@@ -16,7 +16,8 @@ class DatabaseSeeder extends Seeder
             CicloEscolarSeeder::class,
             GrupoSeeder::class,           // necesita database/seeders/data/grupos.csv
             MateriaSeeder::class,         // necesita database/seeders/data/materias.csv
-            UsuarioSeeder::class,         // al final: usa los grupo_id de los grupos
+            UsuarioSeeder::class,         // usa los grupo_id de los grupos
+            DisponibilidadSeeder::class,  // al final: necesita al asesor que crea UsuarioSeeder
         ]);
     }
 }

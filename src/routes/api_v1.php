@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogoController;
+use App\Http\Controllers\Api\V1\DisponibilidadController;
 use App\Http\Controllers\Api\V1\MateriaController;
 use App\Http\Controllers\Api\V1\PerfilController;
 use App\Http\Controllers\Api\V1\RecuperacionController;
@@ -54,5 +55,6 @@ Route::prefix('asesor')
     ->middleware(['auth:sanctum', 'activo', 'rol:asesor'])
     ->group(function () {
         Route::get('/perfil', [PerfilController::class, 'asesor']);
-        // Fase 1.3 en adelante
+        Route::get('/disponibilidad', [DisponibilidadController::class, 'mostrar']);
+         Route::put('/disponibilidad', [DisponibilidadController::class, 'actualizar']);
     });

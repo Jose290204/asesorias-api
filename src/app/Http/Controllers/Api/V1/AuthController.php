@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UsuarioResource;
 use App\Services\AuthService;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-
 
 class AuthController extends Controller
 {
@@ -41,6 +42,38 @@ class AuthController extends Controller
 
         //sin token: el navegador recibe una cookie y la manda solo en cada peticion
         return new UsuarioResource($usuario);
+    }
+
+     //GET /auth/me devuelve el usuario de la sesion o el token actual
+    public function me(Request $request)
+    {
+        //$requesty->user() ya se resolvio con sanctum (cookie o el token del movil)
+        $usuario = $request->user(); 
+
+        //la misma relacion del login, para que el resource devuelva la misma forma
+        $usuario->load('facultad','roles');
+
+        return new UsuarioResource($usuario);
+    }
+
+    //POST /auth/logout: cierra la sesion web o revoca el token de la app
+    public function logout(Request $request): Response
+    {
+        if($request->bearerToken()){
+            //App movil: borra solo el token con el que llego esta peticion.
+            //Los tokens de otros dispositivos siguen vivoss
+            $request->user()->currentAccessToken()->delete();
+        } else {
+            //web: saca el usuario de la sesion
+            Auth::guard('web')->logout();
+            //destruye los datos de la sesion y le da un id nuevo
+            $request->session()->regenerateToken();
+            // y renueva el token CSRF para que el anterior ya no sirva
+            $request->session()->regenerateToken();
+        }
+
+        //204: exito sin cuerpo
+        return response()->noContent();
     }
 
     

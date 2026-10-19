@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\RecuperacionController;
 use Illuminate\Support\Facades\Route;
 
-// Las rutas van agrupadas por bloque. Cada tarea agrega sus rutas
-// SOLO dentro de su bloque, así dos ramas que tocan este archivo no chocan en git.
+
 
 
 // Público y autenticación
@@ -13,11 +13,24 @@ use Illuminate\Support\Facades\Route;
 Route::post('/auth/login', [AuthController::class, 'login'])
     ->middleware('throttle:login');
 
+// Logout solo exige estar autenticado, NO cuenta activa: una cuenta desactivada
+// con sesión abierta tiene que poder salir.
+Route::post('/auth/logout', [AuthController::class, 'logout'])
+    ->middleware('auth:sanctum');
+
+// Recuperación de contraseña (pública). Cada paso con su limitador (clave correo + IP)
+Route::post('/auth/codigo', [RecuperacionController::class, 'solicitar'])
+    ->middleware('throttle:codigo');
+Route::post('/auth/codigo/verificar', [RecuperacionController::class, 'verificar'])
+    ->middleware('throttle:verificar');
+Route::post('/auth/recuperar', [RecuperacionController::class, 'restablecer'])
+    ->middleware('throttle:verificar');
+
 
 // Compartido: cualquier usuario autenticado y activo
 
 Route::middleware(['auth:sanctum', 'activo'])->group(function () {
-    // GET /auth/me
+    Route::get('/auth/me', [AuthController::class, 'me']);
 });
 
 

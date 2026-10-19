@@ -31,5 +31,12 @@ class AppServiceProvider extends ServiceProvider
                 mb_strtolower((string) $request->input('correo')).'|'.$request->ip()
             );
         });
+
+         // Se usa en rutas como throttle:verificar (comprobar el código de 6 dígitos)
+        RateLimiter::for('verificar', function (Request $request) {
+            return Limit::perMinute(10)->by(
+                mb_strtolower((string) $request->input('correo')).'|'.$request->ip()
+            );
+        });
     }
 }

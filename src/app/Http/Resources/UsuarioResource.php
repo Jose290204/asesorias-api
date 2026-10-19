@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -27,7 +28,7 @@ class UsuarioResource extends JsonResource
             // values() reordena los índices para que salga como lista y no como objeto.
             // El front usa esta lista para decidir qué pantallas mostrar. La seguridad real
             // no depende de ella: la hacen los middlewares y las Policies del backend.
-            'roles' => $this->roles->map(fn ($r) => $r->rol_id->value)->values(),
+               'roles' => $this->whenLoaded('roles', fn () => $this->roles->map(fn ($r) => $r->rol_id->value)->values()),
 
             // whenLoaded: solo incluye la facultad si se cargó antes con load('facultad').
             // Así el Resource no dispara consultas 
@@ -38,4 +39,5 @@ class UsuarioResource extends JsonResource
             ]),
         ];
     }
+
 }

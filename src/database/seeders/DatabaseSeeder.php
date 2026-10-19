@@ -12,7 +12,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FacultadSeeder::class,        // primero: todo apunta a facultad_id = 1
             LicenciaturaSeeder::class,
-            PlanEstudiosSeeder::class,
             HorarioSeeder::class,
             CicloEscolarSeeder::class,
             GrupoSeeder::class,           // necesita database/seeders/data/grupos.csv

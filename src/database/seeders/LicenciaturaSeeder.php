@@ -11,10 +11,10 @@ class LicenciaturaSeeder extends Seeder
     {
         $ahora = now();
 
-        
+        // La Informática virtual no es una licenciatura aparte: comparte materias
+        // con la presencial y se distingue por la modalidad del grupo
         $nombres = [
             1 => 'LICENCIATURA EN INFORMATICA',
-            2 => 'LICENCIATURA EN INFORMATICA MODALIDAD VIRTUAL',
             3 => 'LICENCIATURA EN INGENIERIA EN CIENCIA DE DATOS',
             4 => 'LICENCIATURA EN INGENIERÍA EN TELECOMUNICACIONES, SISTEMAS Y ELECTRÓNICA',
         ];

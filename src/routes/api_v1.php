@@ -1,10 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CatalogoController;
+use App\Http\Controllers\Api\V1\MateriaController;
+use App\Http\Controllers\Api\V1\PerfilController;
 use App\Http\Controllers\Api\V1\RecuperacionController;
 use Illuminate\Support\Facades\Route;
-
-
 
 
 // Público y autenticación
@@ -31,6 +32,8 @@ Route::post('/auth/recuperar', [RecuperacionController::class, 'restablecer'])
 
 Route::middleware(['auth:sanctum', 'activo'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::get('/catalogos', [CatalogoController::class, 'index']);
+    Route::get('/materias', [MateriaController::class, 'index']);
 });
 
 
@@ -39,7 +42,9 @@ Route::middleware(['auth:sanctum', 'activo'])->group(function () {
 Route::prefix('estudiante')
     ->middleware(['auth:sanctum', 'activo', 'rol:estudiante'])
     ->group(function () {
-        // Fase 1.2 en adelante
+        Route::get('/perfil', [PerfilController::class, 'estudiante']);
+        Route::get('/materias', [MateriaController::class, 'paraEstudiante']);
+        // Fase 1.4 en adelante
     });
 
 
@@ -48,5 +53,6 @@ Route::prefix('estudiante')
 Route::prefix('asesor')
     ->middleware(['auth:sanctum', 'activo', 'rol:asesor'])
     ->group(function () {
+        Route::get('/perfil', [PerfilController::class, 'asesor']);
         // Fase 1.3 en adelante
     });

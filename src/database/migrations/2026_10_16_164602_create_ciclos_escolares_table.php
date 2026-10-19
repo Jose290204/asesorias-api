@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('facultad_id')->constrained('facultades');
             // Ej. "2026-2027" o "2026-B"
             $table->string('nombre', 50);
+            $table->unsignedTinyInteger('periodo');
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
             // Solo un ciclo debería estar vigente por facultad; eso lo valida el service

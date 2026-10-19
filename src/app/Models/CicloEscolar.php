@@ -13,7 +13,7 @@ class CicloEscolar extends Model
     // Se indica la tabla porque Laravel buscaría "ciclo_escolars"
     protected $table = 'ciclos_escolares';
 
-    protected $fillable = ['facultad_id', 'nombre', 'fecha_inicio', 'fecha_fin', 'vigente'];
+    protected $fillable = ['facultad_id', 'nombre', 'periodo', 'fecha_inicio', 'fecha_fin', 'vigente'];
 
     protected function casts(): array
     {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\AsesorController;
 use App\Http\Controllers\Api\V1\CatalogoController;
 use App\Http\Controllers\Api\V1\DisponibilidadController;
 use App\Http\Controllers\Api\V1\MateriaController;
@@ -45,6 +46,7 @@ Route::prefix('estudiante')
     ->group(function () {
         Route::get('/perfil', [PerfilController::class, 'estudiante']);
         Route::get('/materias', [MateriaController::class, 'paraEstudiante']);
+        Route::get('/asesores', [AsesorController::class, 'index']);
         // Fase 1.4 en adelante
     });
 
@@ -56,5 +58,6 @@ Route::prefix('asesor')
     ->group(function () {
         Route::get('/perfil', [PerfilController::class, 'asesor']);
         Route::get('/disponibilidad', [DisponibilidadController::class, 'mostrar']);
+        
          Route::put('/disponibilidad', [DisponibilidadController::class, 'actualizar']);
     });

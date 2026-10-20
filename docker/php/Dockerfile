@@ -10,4 +10,7 @@ RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+RUN docker-php-ext-install opcache
+COPY opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
 WORKDIR /var/www/html

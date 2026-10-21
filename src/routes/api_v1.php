@@ -34,7 +34,7 @@ Route::post('/auth/recuperar', [RecuperacionController::class, 'restablecer'])
 
 Route::middleware(['auth:sanctum', 'activo'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
-    Route::get('/catalogos', [CatalogoController::class, 'index']);
+    Route::get('/catalogos', [CatalogoController::class, 'catalogos']);
     Route::get('/materias', [MateriaController::class, 'index']);
 });
 

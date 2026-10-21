@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             MateriaSeeder::class,         // necesita database/seeders/data/materias.csv
             UsuarioSeeder::class,         // usa los grupo_id de los grupos
             DisponibilidadSeeder::class,  // al final: necesita al asesor que crea UsuarioSeeder
+            AsesoresDemoSeeder::class,
         ]);
     }
 }

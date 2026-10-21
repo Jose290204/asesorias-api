@@ -17,7 +17,7 @@ class PerfilController extends Controller
     // GET /estudiante/perfil
     public function estudiante(Request $request): PerfilResource
     {
-        $usuario = $request->user()->load('grupo');
+        $usuario = $request->user()->load('grupo.licenciatura');
         $usuario->setAttribute('estadisticas', $this->estadisticas->delEstudiante($usuario));
 
         return new PerfilResource($usuario);

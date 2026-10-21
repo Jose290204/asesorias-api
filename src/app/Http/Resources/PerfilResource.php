@@ -19,6 +19,7 @@ class PerfilResource extends JsonResource
             'num_cel' => $this->num_cel,
             'promedio' => $this->promedio,
             'grupo' => $this->grupo?->nombre,
+            'licenciatura' => $this->grupo?->licenciatura?->nombre,
             // El controller la agrega con setAttribute() antes de devolver el recurso
             'estadisticas' => $this->estadisticas,
         ];

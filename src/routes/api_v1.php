@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\DisponibilidadController;
 use App\Http\Controllers\Api\V1\MateriaController;
 use App\Http\Controllers\Api\V1\PerfilController;
 use App\Http\Controllers\Api\V1\RecuperacionController;
+use App\Http\Controllers\Api\V1\SolicitudController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -47,6 +48,7 @@ Route::prefix('estudiante')
         Route::get('/perfil', [PerfilController::class, 'estudiante']);
         Route::get('/materias', [MateriaController::class, 'paraEstudiante']);
         Route::get('/asesores', [AsesorController::class, 'index']);
+        Route::post('/solicitudes', [SolicitudController::class, 'crear']);
         // Fase 1.4 en adelante
     });
 

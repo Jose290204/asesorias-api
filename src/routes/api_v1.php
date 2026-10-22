@@ -51,6 +51,7 @@ Route::prefix('estudiante')
         Route::post('/solicitudes', [SolicitudController::class, 'crear']);
         Route::get('/solicitudes', [SolicitudController::class, 'index'])->defaults('como', 'estudiante');
         Route::post('/solicitudes/{solicitud}/cancelar', [SolicitudController::class, 'cancelar']);
+        Route::patch('/solicitudes/{solicitud}', [SolicitudController::class, 'editar']);
         // Fase 1.4 en adelante
     });
 

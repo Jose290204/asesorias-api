@@ -13,6 +13,7 @@ use App\Models\Solicitud;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 use App\Http\Requests\RechazarSolicitudRequest;
+use App\Http\Requests\EditarSolicitudRequest;
 
 class SolicitudController extends Controller
 {
@@ -68,5 +69,13 @@ class SolicitudController extends Controller
         Gate::authorize('responder', $solicitud);
 
         return new SolicitudResource($this->solicitudes->aceptar($solicitud));
+    }
+
+     // PATCH /estudiante/solicitudes/{solicitud}
+    public function editar(EditarSolicitudRequest $request, Solicitud $solicitud): SolicitudResource
+    {
+        return new SolicitudResource(
+            $this->solicitudes->editar($request->user(), $solicitud, $request->validated())
+        );
     }
 }

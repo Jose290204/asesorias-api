@@ -115,7 +115,7 @@ class SolicitudService
     }
 
     // Mismo estudiante + asesor + materia + fecha + horario, con una solicitud anterior aún pendiente
-    private function validarSinDuplicado(Usuario $estudiante, Usuario $asesor, array $datos, Carbon $fecha): void
+    private function validarSinDuplicado(Usuario $estudiante, Usuario $asesor, array $datos, Carbon $fecha, ?int $ignorarSolicitudId = null): void
     {
         $existe = Solicitud::where('estudiante_id', $estudiante->id)
             ->where('asesor_id', $asesor->id)
@@ -123,6 +123,7 @@ class SolicitudService
             ->where('horario_id', $datos['horario_id'])
             ->whereDate('fecha_inicio', $fecha)
             ->where('estatus', EstatusSolicitud::Pendiente)
+            ->when($ignorarSolicitudId, fn ($q) => $q->where('id', '!=', $ignorarSolicitudId))
             ->exists();
 
         if ($existe) {
@@ -252,6 +253,75 @@ class SolicitudService
             }
 
             return $actual->load(['estudiante', 'asesor', 'materia', 'horario', 'asesoria']);
+        });
+    }
+
+        // El estudiante edita su solicitud pendiente: fecha, horario y/o nota.
+    // Mismas reglas que crear(), y la propia solicitud no cuenta como duplicado.
+    public function editar(Usuario $estudiante, Solicitud $solicitud, array $datos): Solicitud
+    {
+        return DB::transaction(function () use ($estudiante, $solicitud, $datos) {
+            // Mismo orden de bloqueos que aceptar(): primero el asesor, luego la solicitud.
+            // Así editar y aceptar nunca se esperan en círculo, y si el asesor acepta
+            // en este instante, una de las dos operaciones espera a la otra.
+            Usuario::whereKey($solicitud->asesor_id)->lockForUpdate()->firstOrFail();
+            $actual = Solicitud::whereKey($solicitud->id)->lockForUpdate()->firstOrFail();
+
+            if ($actual->estatus !== EstatusSolicitud::Pendiente) {
+                throw ErrorDeNegocio::conflicto('Solo se pueden editar solicitudes pendientes.', 'solicitud_no_pendiente');
+            }
+
+            // 404 si el asesor ya no es visible; trae cargada su disponibilidad
+            $asesor = $this->asesores->encontrar($estudiante, $actual->asesor_id);
+
+            // Lo que no se mande se queda como estaba
+            $horarioId = $datos['horario_id'] ?? $actual->horario_id;
+            $fecha = isset($datos['fecha']) ? Carbon::parse($datos['fecha']) : $actual->fecha_inicio->copy();
+
+            $dia = Dia::desdeFecha($fecha);
+
+            if ($dia === null) {
+                throw ErrorDeNegocio::invalido('Ese día no se ofrecen asesorías.', 'dia_no_disponible');
+            }
+
+            // La materia y la modalidad no cambian, pero se revalidan por si el asesor
+            // ya dejó de ofrecerlas desde que se creó la solicitud
+            $this->validarQueOfrece($asesor, [
+                'materia_id' => $actual->materia_id,
+                'modalidad' => $actual->modalidad->value,
+                'horario_id' => $horarioId,
+            ], $dia);
+
+            $ciclo = CicloEscolar::vigente()->first();
+
+            if (! $ciclo) {
+                throw ErrorDeNegocio::conflicto('No hay un ciclo escolar vigente.', 'sin_ciclo');
+            }
+
+            if ($fecha->gt($ciclo->fecha_fin)) {
+                throw ErrorDeNegocio::invalido('La fecha queda fuera del ciclo escolar vigente.', 'fuera_de_ciclo');
+            }
+
+            // El último argumento hace que la propia solicitud no choque consigo misma
+            $this->validarSinDuplicado($estudiante, $asesor, [
+                'materia_id' => $actual->materia_id,
+                'horario_id' => $horarioId,
+            ], $fecha, $actual->id);
+
+            $cambios = [
+                'ciclo_escolar_id' => $ciclo->id,
+                'horario_id' => $horarioId,
+                'fecha_inicio' => $fecha,
+            ];
+
+            // array_key_exists y no isset: "nota": null es válido y significa "borrar la nota"
+            if (array_key_exists('nota', $datos)) {
+                $cambios['nota_estudiante'] = $datos['nota'];
+            }
+
+            $actual->update($cambios);
+
+            return $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
         });
     }
 }

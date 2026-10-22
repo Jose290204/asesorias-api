@@ -11,6 +11,8 @@ use App\Models\Usuario;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Enums\EstatusAsesoria;
+use App\Models\Asesoria;
 
 class SolicitudService
 {
@@ -174,6 +176,82 @@ class SolicitudService
             ]);
 
             return $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
+        });
+    }
+
+        // Motivo que ve el estudiante cuando el sistema rechaza su solicitud porque el cupo se ocupó
+    private const MOTIVO_CUPO_TOMADO = 'Este horario ya fue tomado por otra solicitud aceptada.';
+
+    // El asesor acepta una solicitud pendiente: crea la asesoría y rechaza a las competidoras.
+    public function aceptar(Solicitud $solicitud): Solicitud
+    {
+        return DB::transaction(function () use ($solicitud) {
+            // Se bloquea la fila del ASESOR primero. Así dos aceptaciones del mismo asesor
+            //    (aunque sean de solicitudes distintas) se hacen una tras otra y la segunda
+            //    ya ve el horario ocupado por la primera.
+            Usuario::whereKey($solicitud->asesor_id)->lockForUpdate()->firstOrFail();
+
+            // 2. Se relee la solicitud bloqueada: la que llegó por la ruta puede estar vieja
+            $actual = Solicitud::whereKey($solicitud->id)->lockForUpdate()->firstOrFail();
+
+            if ($actual->estatus !== EstatusSolicitud::Pendiente) {
+                throw ErrorDeNegocio::conflicto('Solo se pueden aceptar solicitudes pendientes.', 'solicitud_no_pendiente');
+            }
+
+            // El día de la semana sale de fecha_inicio (lunes a viernes; las solicitudes nunca caen en fin de semana)
+            $dia = Dia::desdeFecha($actual->fecha_inicio);
+
+            // ¿El asesor ya tiene una asesoría EN CURSO en ese día de la semana y ese horario?
+            $ocupado = Asesoria::where('asesor_id', $actual->asesor_id)
+                ->where('estatus', EstatusAsesoria::EnCurso)
+                ->where('horario_id', $actual->horario_id)
+                ->get(['fecha_inicio'])
+                ->contains(fn ($a) => Dia::desdeFecha($a->fecha_inicio) === $dia);
+
+            if ($ocupado) {
+                throw ErrorDeNegocio::conflicto('Ya tienes una asesoría en curso en ese día y horario.', 'horario_ocupado');
+            }
+
+            // 4. La solicitud queda aceptada
+            $actual->update([
+                'estatus' => EstatusSolicitud::Aceptada,
+                'respondida_en' => now(),
+            ]);
+
+            // 5. Se crea la asesoría copiando los datos de la solicitud
+            Asesoria::create([
+                'facultad_id' => $actual->facultad_id,
+                'ciclo_escolar_id' => $actual->ciclo_escolar_id,
+                'grupo_id' => $actual->grupo_id,
+                'solicitud_id' => $actual->id,
+                'estudiante_id' => $actual->estudiante_id,
+                'asesor_id' => $actual->asesor_id,
+                'materia_id' => $actual->materia_id,
+                'horario_id' => $actual->horario_id,
+                'modalidad' => $actual->modalidad,
+                'razon' => $actual->razon,
+                'estatus' => EstatusAsesoria::EnCurso,
+                'fecha_inicio' => $actual->fecha_inicio,
+            ]);
+
+            // sen buscan las otras solicitudes pendientes del mismo asesor + mismo horario + mismo día de la semana
+            $competidoras = Solicitud::where('asesor_id', $actual->asesor_id)
+                ->where('horario_id', $actual->horario_id)
+                ->where('estatus', EstatusSolicitud::Pendiente)
+                ->where('id', '!=', $actual->id)
+                ->get(['id', 'fecha_inicio'])
+                ->filter(fn ($s) => Dia::desdeFecha($s->fecha_inicio) === $dia)
+                ->pluck('id');
+
+            if ($competidoras->isNotEmpty()) {
+                Solicitud::whereIn('id', $competidoras)->update([
+                    'estatus' => EstatusSolicitud::Rechazada->value,
+                    'motivo_rechazo' => self::MOTIVO_CUPO_TOMADO,
+                    'respondida_en' => now(),
+                ]);
+            }
+
+            return $actual->load(['estudiante', 'asesor', 'materia', 'horario', 'asesoria']);
         });
     }
 }

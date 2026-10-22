@@ -60,4 +60,13 @@ class SolicitudController extends Controller
             $this->solicitudes->rechazar($solicitud, $request->validated()['motivo_rechazo'])
         );
     }
+
+    // POST /asesor/solicitudes/{solicitud}/aceptar
+    public function aceptar(Solicitud $solicitud): SolicitudResource
+    {
+        // 403 si no es la solicitud de este asesor (no hay body que validar, así que se hace aquí)
+        Gate::authorize('responder', $solicitud);
+
+        return new SolicitudResource($this->solicitudes->aceptar($solicitud));
+    }
 }

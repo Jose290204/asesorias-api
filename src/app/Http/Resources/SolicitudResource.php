@@ -43,6 +43,7 @@ class SolicitudResource extends JsonResource
             // El front lo muestra como "Notas del asesor"; null mientras esté pendiente
             'motivo_rechazo' => $this->motivo_rechazo,
             'respondida_en' => $this->respondida_en?->toIso8601String(),
+            'asesoria' => $this->whenLoaded('asesoria', fn () => $this->asesoria ? ['id' => $this->asesoria->id] : null),
         ];
     }
 }

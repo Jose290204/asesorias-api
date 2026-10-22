@@ -12,6 +12,7 @@ use App\Enums\EstatusSolicitud;
 use App\Models\Solicitud;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
+use App\Http\Requests\RechazarSolicitudRequest;
 
 class SolicitudController extends Controller
 {
@@ -50,5 +51,13 @@ class SolicitudController extends Controller
 
         // El service hace el trabajo y devuelve la solicitud ya cancelada
         return new SolicitudResource($this->solicitudes->cancelar($solicitud));
+    }
+
+    // POST /asesor/solicitudes/{solicitud}/rechazar
+    public function rechazar(RechazarSolicitudRequest $request, Solicitud $solicitud): SolicitudResource
+    {
+        return new SolicitudResource(
+            $this->solicitudes->rechazar($solicitud, $request->validated()['motivo_rechazo'])
+        );
     }
 }

@@ -153,4 +153,27 @@ class SolicitudService
         return $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
     });
     }
+
+    // El asesor rechaza una solicitud pendiente y deja el motivo.
+    // con el estudiante cancelando, o con el propio asesor aceptando, en el mismo instante.
+    public function rechazar(Solicitud $solicitud, string $motivo): Solicitud
+    {
+        return DB::transaction(function () use ($solicitud, $motivo) {
+            // Se relee la fila bloqueada: el $solicitud que llegó puede estar viejo
+            $actual = Solicitud::whereKey($solicitud->id)->lockForUpdate()->firstOrFail();
+
+            // Solo se rechaza lo pendiente (la cancelada, aceptada o rechazada ya está cerrada)
+            if ($actual->estatus !== EstatusSolicitud::Pendiente) {
+                throw ErrorDeNegocio::conflicto('Solo se pueden rechazar solicitudes pendientes.', 'solicitud_no_pendiente');
+            }
+
+            $actual->update([
+                'estatus' => EstatusSolicitud::Rechazada,
+                'motivo_rechazo' => $motivo,
+                'respondida_en' => now(),
+            ]);
+
+            return $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
+        });
+    }
 }

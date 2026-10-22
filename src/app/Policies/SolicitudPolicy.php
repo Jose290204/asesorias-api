@@ -21,4 +21,10 @@ class SolicitudPolicy
     {
         return $solicitud->estudiante_id === $usuario->id;
     }
+
+    //solo el asesor al que se le hizo la solicitud puede rechazar o aceptar 
+    public function responder(Usuario $usuario, Solicitud $solicitud): bool
+    {
+        return $solicitud->asesor_id === $usuario->id;
+    }
 }

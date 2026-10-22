@@ -64,5 +64,5 @@ Route::prefix('asesor')
         Route::get('/disponibilidad', [DisponibilidadController::class, 'mostrar']);
         Route::put('/disponibilidad', [DisponibilidadController::class, 'actualizar']);
         Route::get('/solicitudes', [SolicitudController::class, 'index'])->defaults('como', 'asesor');
-         
+        Route::post('/solicitudes/{solicitud}/rechazar', [SolicitudController::class, 'rechazar']);
     });

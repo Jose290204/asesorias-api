@@ -7,4 +7,5 @@ enum EstatusSolicitud: string
     case Pendiente = 'pendiente';
     case Aceptada = 'aceptada';
     case Rechazada = 'rechazada';
+    case Cancelada = 'cancelada';
 }

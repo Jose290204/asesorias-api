@@ -8,7 +8,9 @@ use App\Exceptions\ErrorDeNegocio;
 use App\Models\CicloEscolar;
 use App\Models\Solicitud;
 use App\Models\Usuario;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class SolicitudService
 {
@@ -65,6 +67,25 @@ class SolicitudService
         return $solicitud->load(['asesor', 'materia', 'horario']);
     }
 
+        // Lista las solicitudes del usuario según el rol con el que consulta.
+    // $como llega desde la ruta ('estudiante' o 'asesor'); decide por qué columna se filtra.
+    // Un asesor par usa las dos rutas y en cada una ve solo lo suyo en ese rol.
+    public function listar(Usuario $usuario, string $como, ?EstatusSolicitud $estatus): LengthAwarePaginator
+    {
+        // Estudiante: las que él pidió. Asesor: las que le pidieron a él.
+        $columna = $como === 'asesor' ? 'asesor_id' : 'estudiante_id';
+
+        return Solicitud::query()
+            ->where($columna, $usuario->id)
+            // when() agrega el filtro solo si $estatus no es null
+            ->when($estatus, fn ($q) => $q->where('estatus', $estatus))
+            // Relaciones que el Resource necesita, cargadas de golpe (evita N+1)
+            ->with(['estudiante', 'asesor', 'materia', 'horario'])
+            // Más recientes primero; el id desempata
+            ->latest('id')
+            ->paginate(10);
+    }
+
     // El asesor debe ofrecer esa materia, esa modalidad y ese día+horario.
     // Reutiliza las colecciones que ya trae cargadas AsesorService::encontrar (sin consultas nuevas)
     private function validarQueOfrece(Usuario $asesor, array $datos, Dia $dia): void
@@ -105,5 +126,31 @@ class SolicitudService
         if ($existe) {
             throw ErrorDeNegocio::conflicto('Ya tienes una solicitud pendiente para ese mismo horario.', 'solicitud_duplicada');
         }
+    }
+
+    public function cancelar(Solicitud $solicitud): Solicitud
+    {
+         // se hace todo en una transaccion
+        return DB::transaction(function () use ($solicitud) {
+
+        // Vuelve a leer la fila desde la BD y la BLOQUEA (lockForUpdate) hasta que
+        // termine la transacción. Si el asesor la está aceptando justo ahora, esta línea
+        // espera su turno. firstOrFail() lanza 404 si la fila ya no existe.
+        $actual = Solicitud::whereKey($solicitud->id)->lockForUpdate()->firstOrFail();
+
+        // solo se cancela solicitudes pendientes
+        if ($actual->estatus !== EstatusSolicitud::Pendiente) {
+            throw ErrorDeNegocio::conflicto('Solo se pueden cancelar solicitudes pendientes.', 'solicitud_no_pendiente');
+        }
+
+        // No se borra: se cambia el estatus y se anota cuándo se cerró
+        $actual->update([
+            'estatus' => EstatusSolicitud::Cancelada,
+            'respondida_en' => now(),
+        ]);
+
+        // Carga las relaciones que el Resource va a usar y devuelve la solicitud
+        return $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
+    });
     }
 }

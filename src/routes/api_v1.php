@@ -49,6 +49,8 @@ Route::prefix('estudiante')
         Route::get('/materias', [MateriaController::class, 'paraEstudiante']);
         Route::get('/asesores', [AsesorController::class, 'index']);
         Route::post('/solicitudes', [SolicitudController::class, 'crear']);
+        Route::get('/solicitudes', [SolicitudController::class, 'index'])->defaults('como', 'estudiante');
+        Route::post('/solicitudes/{solicitud}/cancelar', [SolicitudController::class, 'cancelar']);
         // Fase 1.4 en adelante
     });
 
@@ -60,6 +62,7 @@ Route::prefix('asesor')
     ->group(function () {
         Route::get('/perfil', [PerfilController::class, 'asesor']);
         Route::get('/disponibilidad', [DisponibilidadController::class, 'mostrar']);
-        
-         Route::put('/disponibilidad', [DisponibilidadController::class, 'actualizar']);
+        Route::put('/disponibilidad', [DisponibilidadController::class, 'actualizar']);
+        Route::get('/solicitudes', [SolicitudController::class, 'index'])->defaults('como', 'asesor');
+         
     });

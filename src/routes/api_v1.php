@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AsesorController;
+use App\Http\Controllers\Api\V1\AsesoriaController;
 use App\Http\Controllers\Api\V1\CatalogoController;
 use App\Http\Controllers\Api\V1\DisponibilidadController;
 use App\Http\Controllers\Api\V1\MateriaController;
@@ -52,7 +53,7 @@ Route::prefix('estudiante')
         Route::get('/solicitudes', [SolicitudController::class, 'index'])->defaults('como', 'estudiante');
         Route::post('/solicitudes/{solicitud}/cancelar', [SolicitudController::class, 'cancelar']);
         Route::patch('/solicitudes/{solicitud}', [SolicitudController::class, 'editar']);
-        // Fase 1.4 en adelante
+        Route::get('/asesorias', [AsesoriaController::class, 'index'])->defaults('como', 'estudiante');
     });
 
 
@@ -67,4 +68,5 @@ Route::prefix('asesor')
         Route::get('/solicitudes', [SolicitudController::class, 'index'])->defaults('como', 'asesor');
         Route::post('/solicitudes/{solicitud}/rechazar', [SolicitudController::class, 'rechazar']);
         Route::post('/solicitudes/{solicitud}/aceptar', [SolicitudController::class, 'aceptar']);
+        Route::get('/asesorias', [AsesoriaController::class, 'index'])->defaults('como', 'asesor');
     });

@@ -69,4 +69,6 @@ Route::prefix('asesor')
         Route::post('/solicitudes/{solicitud}/rechazar', [SolicitudController::class, 'rechazar']);
         Route::post('/solicitudes/{solicitud}/aceptar', [SolicitudController::class, 'aceptar']);
         Route::get('/asesorias', [AsesoriaController::class, 'index'])->defaults('como', 'asesor');
+        Route::post('/asesorias/{asesoria}/completar', [AsesoriaController::class, 'completar']);
+        Route::post('/asesorias/{asesoria}/cancelar', [AsesoriaController::class, 'cancelar']);
     });

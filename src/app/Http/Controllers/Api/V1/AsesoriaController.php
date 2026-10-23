@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ListarAsesoriasRequest;
 use App\Http\Resources\AsesoriaResource;
 use App\Services\AsesoriaService;
+use App\Models\Asesoria;
+use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\CancelarAsesoriaRequest;
 
 class AsesoriaController extends Controller
 {
@@ -25,5 +28,23 @@ class AsesoriaController extends Controller
         );
 
         return AsesoriaResource::collection($asesorias);
+    }
+
+     // POST /asesor/asesorias/{asesoria}/completar
+    public function completar(Asesoria $asesoria): AsesoriaResource
+    {
+        // 403 si no es el asesor asignado. Sin body que validar, así que se hace aquí;
+        // el 403 sale antes que cualquier 409 del service
+        Gate::authorize('gestionar', $asesoria);
+
+        return new AsesoriaResource($this->asesorias->completar($asesoria));
+    }
+
+        // POST /asesor/asesorias/{asesoria}/cancelar
+    public function cancelar(CancelarAsesoriaRequest $request, Asesoria $asesoria): AsesoriaResource
+    {
+        return new AsesoriaResource(
+            $this->asesorias->cancelar($asesoria, $request->validated()['motivo_cancelacion'])
+        );
     }
 }

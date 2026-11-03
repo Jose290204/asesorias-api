@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ListarAsesoriasRequest;
+use App\Http\Requests\EditarAsesoriaRequest;
 use App\Http\Resources\AsesoriaResource;
 use App\Services\AsesoriaService;
 use App\Models\Asesoria;
@@ -54,6 +55,15 @@ class AsesoriaController extends Controller
     {
         return new AsesoriaResource(
             $asesorias->crear($request->user(), $request->validated())
+        );
+    }
+
+    // PATCH /asesor/asesorias/{asesoria}
+    // El permiso (AsesoriaPolicy::gestionar) lo revisa EditarAsesoriaRequest::authorize().
+    public function editar(EditarAsesoriaRequest $request, Asesoria $asesoria, AsesoriaService $asesorias): AsesoriaResource
+    {
+        return new AsesoriaResource(
+            $asesorias->editar($asesoria, $request->validated())
         );
     }
 }

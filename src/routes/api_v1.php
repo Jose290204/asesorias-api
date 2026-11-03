@@ -72,4 +72,5 @@ Route::prefix('asesor')
         Route::post('/asesorias/{asesoria}/completar', [AsesoriaController::class, 'completar']);
         Route::post('/asesorias/{asesoria}/cancelar', [AsesoriaController::class, 'cancelar']);
         Route::post('/asesorias', [AsesoriaController::class, 'crear']);
+        Route::patch('/asesorias/{asesoria}', [AsesoriaController::class, 'editar']);
     });

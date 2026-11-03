@@ -10,6 +10,7 @@ use App\Models\CicloEscolar;
 use App\Models\DisponibilidadHorario;
 use App\Models\Usuario;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -109,6 +110,50 @@ class AsesoriaService
         });
     }
 
+    // El asesor edita una asesoría en curso: fecha de inicio, horario, modalidad, razón y observaciones.
+    // $datos viene de $request->validated(): solo trae las llaves que el cliente mandó.
+    public function editar(Asesoria $asesoria, array $datos): Asesoria
+    {
+        return DB::transaction(function () use ($asesoria, $datos) {
+            // Mismo orden de bloqueos que crear y SolicitudService::aceptar: primero la fila
+            // del asesor y luego la asesoría. Así dos cambios del mismo cupo se hacen en fila.
+            Usuario::whereKey($asesoria->asesor_id)->lockForUpdate()->firstOrFail();
+
+            // 409 antes que cualquier validación de datos: una cerrada ya no se toca
+            $actual = $this->bloquearEnCurso($asesoria, 'editar');
+
+            $cambios = Arr::only($datos, ['fecha_inicio', 'horario_id', 'modalidad', 'razon', 'observaciones']);
+
+            // Valores finales: lo que llegó, o lo que ya tenía la asesoría
+            $fecha = isset($cambios['fecha_inicio'])
+                ? Carbon::parse($cambios['fecha_inicio'])->startOfDay()
+                : $actual->fecha_inicio;
+            $horarioId = (int) ($cambios['horario_id'] ?? $actual->horario_id);
+
+            // La fecha solo se revisa contra el ciclo y las sesiones si realmente cambia
+            if (isset($cambios['fecha_inicio']) && ! $fecha->equalTo($actual->fecha_inicio)) {
+                $ciclo = $this->validarFechaInicio($actual, $fecha);
+
+                $cambios['ciclo_escolar_id'] = $ciclo->id;
+            }
+
+            // El slot es día de la semana + horario. Solo se revalida si alguno de los dos cambia:
+            // mover la fecha a otra semana con el mismo día, o tocar solo observaciones,
+            // no debe fallar porque el asesor ya no ofrezca ese horario.
+            $diaActual = Dia::desdeFecha($actual->fecha_inicio);
+            $diaNuevo = Dia::desdeFecha($fecha);
+
+            if ($horarioId !== $actual->horario_id || $diaNuevo !== $diaActual) {
+                // Se ignora a sí misma: no puede chocar con su propio cupo
+                $this->validarHorarioLibre($actual->asesor_id, $diaNuevo, $horarioId, $actual->id);
+            }
+
+            $actual->update($cambios);
+
+            return $this->paraRespuesta($actual);
+        });
+    }
+
     // El asesor da por terminada una asesoría en curso.
     public function completar(Asesoria $asesoria): Asesoria
     {
@@ -173,6 +218,34 @@ class AsesoriaService
         }
     }
 
+    // La nueva fecha de inicio debe caer dentro del ciclo vigente y no pasar de la primera sesión
+    // ya registrada (no tiene sentido que la asesoría "empiece" después de haber dado sesión).
+    // Devuelve el ciclo vigente para que editar() actualice ciclo_escolar_id.
+    private function validarFechaInicio(Asesoria $asesoria, Carbon $fecha): CicloEscolar
+    {
+        $ciclo = CicloEscolar::vigente()->first();
+
+        if (! $ciclo) {
+            throw ErrorDeNegocio::conflicto('No hay un ciclo escolar vigente.', 'sin_ciclo');
+        }
+
+        if ($fecha->lt($ciclo->fecha_inicio) || $fecha->gt($ciclo->fecha_fin)) {
+            throw ErrorDeNegocio::invalido('La fecha queda fuera del ciclo escolar vigente.', 'fuera_de_ciclo');
+        }
+
+        // min() sobre la relación devuelve la fecha más antigua como texto, o null si no hay sesiones
+        $primera = $asesoria->sesiones()->min('fecha');
+
+        if ($primera !== null && $fecha->gt(Carbon::parse($primera))) {
+            throw ErrorDeNegocio::invalido(
+                'La fecha de inicio no puede ser posterior a la primera sesión registrada.',
+                'fecha_posterior_a_sesiones'
+            );
+        }
+
+        return $ciclo;
+    }
+
     // Día laborable + horario que el asesor ofrece + cupo no ocupado por otra asesoría en curso.
     // $ignorarAsesoriaId se usa al editar, para no chocar consigo misma.
     private function validarHorarioLibre(int $asesorId, ?Dia $dia, int $horarioId, ?int $ignorarAsesoriaId = null): void
@@ -205,7 +278,7 @@ class AsesoriaService
     }
 
     // Relee la fila y la BLOQUEA hasta que termine la transacción; el $asesoria que llegó
-    // puede estar viejo. Así completar y cancelar simultáneos se hacen una tras otra y
+    // puede estar viejo. Así completar, cancelar y editar simultáneos se hacen una tras otra y
     // el segundo ve el estatus ya cambiado.
     // OJO: solo bloquea si se llama dentro de DB::transaction().
     private function bloquearEnCurso(Asesoria $asesoria, string $accion): Asesoria

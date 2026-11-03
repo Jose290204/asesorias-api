@@ -2,15 +2,23 @@
 
 namespace App\Services;
 
+use App\Enums\Dia;
 use App\Enums\EstatusAsesoria;
+use App\Exceptions\ErrorDeNegocio;
 use App\Models\Asesoria;
+use App\Models\CicloEscolar;
+use App\Models\DisponibilidadHorario;
 use App\Models\Usuario;
 use Illuminate\Pagination\LengthAwarePaginator;
-use App\Exceptions\ErrorDeNegocio;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AsesoriaService
 {
+    public function __construct(private EstudianteService $estudiantes)
+    {
+    }
+
     // $como = 'estudiante' | 'asesor': decide de qué lado se filtra la lista
     public function listar(Usuario $usuario, string $como, ?string $estatus = null, ?string $buscar = null): LengthAwarePaginator
     {
@@ -51,7 +59,57 @@ class AsesoriaService
             ->paginate(10);
     }
 
-        // El asesor da por terminada una asesoría en curso.
+    // El asesor da de alta una asesoría directa (sin solicitud). Nace "en_curso".
+    public function crear(Usuario $asesor, array $datos): Asesoria
+    {
+        // 404 si el estudiante no es visible para este asesor
+        $estudiante = $this->estudiantes->encontrar($asesor, (int) $datos['estudiante_id']);
+
+        return DB::transaction(function () use ($asesor, $estudiante, $datos) {
+            // Se bloquea la fila del asesor (mismo orden que SolicitudService::aceptar):
+            // dos altas simultáneas del mismo cupo se hacen una tras otra.
+            // Las disponibilidades se leen ya dentro del lock, frescas.
+            $asesor = Usuario::whereKey($asesor->id)
+                ->with(['disponibilidadMaterias', 'disponibilidadModalidades'])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $ciclo = CicloEscolar::vigente()->first();
+
+            if (! $ciclo) {
+                throw ErrorDeNegocio::conflicto('No hay un ciclo escolar vigente.', 'sin_ciclo');
+            }
+
+            $fecha = Carbon::parse($datos['fecha_inicio'])->startOfDay();
+
+            if ($fecha->lt($ciclo->fecha_inicio) || $fecha->gt($ciclo->fecha_fin)) {
+                throw ErrorDeNegocio::invalido('La fecha queda fuera del ciclo escolar vigente.', 'fuera_de_ciclo');
+            }
+
+            $this->validarQueOfrece($asesor, $datos);
+            $this->validarHorarioLibre($asesor->id, Dia::desdeFecha($fecha), (int) $datos['horario_id']);
+
+            $asesoria = Asesoria::create([
+                'facultad_id' => $asesor->facultad_id,
+                'ciclo_escolar_id' => $ciclo->id,
+                'grupo_id' => $estudiante->grupo_id,
+                'solicitud_id' => null,
+                'estudiante_id' => $estudiante->id,
+                'asesor_id' => $asesor->id,
+                'materia_id' => $datos['materia_id'],
+                'horario_id' => $datos['horario_id'],
+                'fecha_inicio' => $fecha,
+                'modalidad' => $datos['modalidad'],
+                'razon' => $datos['razon'],
+                'estatus' => EstatusAsesoria::EnCurso,
+                'observaciones' => $datos['observaciones'] ?? null,
+            ]);
+
+            return $this->paraRespuesta($asesoria);
+        });
+    }
+
+    // El asesor da por terminada una asesoría en curso.
     public function completar(Asesoria $asesoria): Asesoria
     {
         // Todo en una transacción
@@ -73,8 +131,7 @@ class AsesoriaService
                 'finalizada_en' => now(),
             ]);
 
-            // Relaciones que el Resource usa (como en la lista del asesor) y el conteo de sesiones
-            return $actual->load(['estudiante', 'materia', 'horario'])->loadCount('sesiones');
+            return $this->paraRespuesta($actual);
         });
     }
 
@@ -94,6 +151,57 @@ class AsesoriaService
 
             return $this->paraRespuesta($actual);
         });
+    }
+
+    // ---------- Ayudantes privados ----------
+
+    // El asesor debe ofrecer esa materia y esa modalidad
+    private function validarQueOfrece(Usuario $asesor, array $datos): void
+    {
+        $daMateria = $asesor->disponibilidadMaterias
+            ->contains(fn ($fila) => $fila->materia_id === (int) $datos['materia_id']);
+
+        if (! $daMateria) {
+            throw ErrorDeNegocio::invalido('No impartes esa materia.', 'materia_no_ofrecida');
+        }
+
+        $daModalidad = $asesor->disponibilidadModalidades
+            ->contains(fn ($fila) => $fila->modalidad->value === $datos['modalidad']);
+
+        if (! $daModalidad) {
+            throw ErrorDeNegocio::invalido('No ofreces esa modalidad.', 'modalidad_no_ofrecida');
+        }
+    }
+
+    // Día laborable + horario que el asesor ofrece + cupo no ocupado por otra asesoría en curso.
+    // $ignorarAsesoriaId se usa al editar, para no chocar consigo misma.
+    private function validarHorarioLibre(int $asesorId, ?Dia $dia, int $horarioId, ?int $ignorarAsesoriaId = null): void
+    {
+        // Sábado o domingo: nadie ofrece esos días
+        if ($dia === null) {
+            throw ErrorDeNegocio::invalido('Ese día no se ofrecen asesorías.', 'dia_no_disponible');
+        }
+
+        $ofrece = DisponibilidadHorario::where('asesor_id', $asesorId)
+            ->where('dia', $dia->value)
+            ->where('horario_id', $horarioId)
+            ->exists();
+
+        if (! $ofrece) {
+            throw ErrorDeNegocio::invalido('No tienes ese horario disponible ese día.', 'horario_no_disponible');
+        }
+
+        // El cupo es día de la semana + horario: se calcula, nunca se guarda
+        $ocupado = Asesoria::where('asesor_id', $asesorId)
+            ->where('horario_id', $horarioId)
+            ->where('estatus', EstatusAsesoria::EnCurso)
+            ->when($ignorarAsesoriaId, fn ($q) => $q->where('id', '!=', $ignorarAsesoriaId))
+            ->pluck('fecha_inicio')
+            ->contains(fn ($fecha) => Dia::desdeFecha($fecha) === $dia);
+
+        if ($ocupado) {
+            throw ErrorDeNegocio::conflicto('Ya tienes otra asesoría en curso en ese horario.', 'horario_ocupado');
+        }
     }
 
     // Relee la fila y la BLOQUEA hasta que termine la transacción; el $asesoria que llegó
@@ -116,6 +224,4 @@ class AsesoriaService
     {
         return $asesoria->load(['estudiante', 'materia', 'horario'])->loadCount('sesiones');
     }
-
-   
 }

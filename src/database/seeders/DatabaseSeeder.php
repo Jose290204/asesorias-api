@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             UsuarioSeeder::class,         // usa los grupo_id de los grupos
             DisponibilidadSeeder::class,  // al final: necesita al asesor que crea UsuarioSeeder
             AsesoresDemoSeeder::class,
+            AdminSeeder::class,
         ]);
     }
 }

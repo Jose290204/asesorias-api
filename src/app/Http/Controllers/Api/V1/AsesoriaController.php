@@ -9,6 +9,7 @@ use App\Services\AsesoriaService;
 use App\Models\Asesoria;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\CancelarAsesoriaRequest;
+use App\Http\Requests\CrearAsesoriaRequest;
 
 class AsesoriaController extends Controller
 {
@@ -45,6 +46,14 @@ class AsesoriaController extends Controller
     {
         return new AsesoriaResource(
             $this->asesorias->cancelar($asesoria, $request->validated()['motivo_cancelacion'])
+        );
+    }
+
+    // POST /asesor/asesorias
+    public function crear(CrearAsesoriaRequest $request, AsesoriaService $asesorias): AsesoriaResource
+    {
+        return new AsesoriaResource(
+            $asesorias->crear($request->user(), $request->validated())
         );
     }
 }

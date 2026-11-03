@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\MateriaController;
 use App\Http\Controllers\Api\V1\PerfilController;
 use App\Http\Controllers\Api\V1\RecuperacionController;
 use App\Http\Controllers\Api\V1\SolicitudController;
+use App\Http\Controllers\Api\V1\EstudianteController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -73,4 +74,5 @@ Route::prefix('asesor')
         Route::post('/asesorias/{asesoria}/cancelar', [AsesoriaController::class, 'cancelar']);
         Route::post('/asesorias', [AsesoriaController::class, 'crear']);
         Route::patch('/asesorias/{asesoria}', [AsesoriaController::class, 'editar']);
+        Route::get('/estudiantes', [EstudianteController::class, 'index']);
     });

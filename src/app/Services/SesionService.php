@@ -2,8 +2,14 @@
 
 namespace App\Services;
 
+use App\Enums\EstatusAsesoria;
+use App\Exceptions\ErrorDeNegocio;
 use App\Models\Asesoria;
+use App\Models\Sesion;
+use App\Models\Usuario;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class SesionService
 {
@@ -19,5 +25,56 @@ class SesionService
             // El id desempata: dos sesiones el mismo día (otro horario) salen en orden estable
             ->orderByDesc('id')
             ->get();
+    }
+
+    // El asesor asignado registra una sesión de una asesoría en curso.
+    // $datos viene de $request->validated(): fecha, horario_id y opcionalmente tema y notas.
+    public function registrar(Asesoria $asesoria, Usuario $asesor, array $datos): Sesion
+    {
+        return DB::transaction(function () use ($asesoria, $asesor, $datos) {
+            // Relee la asesoría y la BLOQUEA hasta que termine la transacción: si en el mismo
+            // instante se está completando, cancelando o editando su fecha de inicio, este
+            // método espera su turno y después ve el estado ya cambiado.
+            $actual = Asesoria::whereKey($asesoria->id)->lockForUpdate()->firstOrFail();
+
+            // Solo se registran sesiones mientras la asesoría sigue en curso.
+            // Va antes que las demás reglas: una cerrada ya no se toca
+            if ($actual->estatus !== EstatusAsesoria::EnCurso) {
+                throw ErrorDeNegocio::conflicto('Solo se pueden registrar sesiones en asesorías en curso.', 'asesoria_no_en_curso');
+            }
+
+            $fecha = Carbon::parse($datos['fecha'])->startOfDay();
+
+            // Una sesión no puede ser anterior al inicio de la asesoría
+            if ($fecha->lt($actual->fecha_inicio)) {
+                throw ErrorDeNegocio::invalido(
+                    'La sesión no puede ser anterior a la fecha de inicio de la asesoría.',
+                    'fecha_anterior_al_inicio'
+                );
+            }
+
+            // Única por asesoría + fecha + horario (la BD también lo impone con un índice único;
+            // esta consulta da un 409 claro en vez de un error de base de datos)
+            $repetida = $actual->sesiones()
+                ->whereDate('fecha', $fecha->toDateString())
+                ->where('horario_id', $datos['horario_id'])
+                ->exists();
+
+            if ($repetida) {
+                throw ErrorDeNegocio::conflicto('Ya hay una sesión registrada en esa fecha y horario.', 'sesion_duplicada');
+            }
+
+            // Sin tope de sesiones. create() desde la relación rellena asesoria_id solo
+            $sesion = $actual->sesiones()->create([
+                'fecha' => $fecha,
+                'horario_id' => $datos['horario_id'],
+                'tema' => $datos['tema'] ?? null,
+                'notas' => $datos['notas'] ?? null,
+                'registrada_por' => $asesor->id,
+            ]);
+
+            // Relaciones que el Resource necesita para armar la respuesta
+            return $sesion->load(['horario', 'registradaPor']);
+        });
     }
 }

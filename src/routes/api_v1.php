@@ -77,4 +77,5 @@ Route::prefix('asesor')
         Route::post('/asesorias', [AsesoriaController::class, 'crear']);
         Route::patch('/asesorias/{asesoria}', [AsesoriaController::class, 'editar']);
         Route::get('/estudiantes', [EstudianteController::class, 'index']);
+        Route::post('/asesorias/{asesoria}/sesiones', [SesionController::class, 'registrar']);
     });

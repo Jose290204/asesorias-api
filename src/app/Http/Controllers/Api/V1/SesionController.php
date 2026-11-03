@@ -8,6 +8,8 @@ use App\Models\Asesoria;
 use App\Services\SesionService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\RegistrarSesionRequest;
+use App\Models\Usuario;
 
 class SesionController extends Controller
 {
@@ -19,5 +21,14 @@ class SesionController extends Controller
         Gate::authorize('ver', $asesoria);
 
         return SesionResource::collection($sesiones->listar($asesoria));
+    }
+
+    // POST /asesor/asesorias/{asesoria}/sesiones: responde 201 con la sesión recién creada.
+    // El permiso (AsesoriaPolicy::gestionar) lo revisa RegistrarSesionRequest::authorize().
+    public function registrar(RegistrarSesionRequest $request, Asesoria $asesoria, SesionService $sesiones): SesionResource
+    {
+        return new SesionResource(
+            $sesiones->registrar($asesoria, $request->user(), $request->validated())
+        );
     }
 }

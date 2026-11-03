@@ -77,4 +77,21 @@ class SesionService
             return $sesion->load(['horario', 'registradaPor']);
         });
     }
+
+        // El asesor asignado elimina una sesión. Es un borrado real: la sesión no tiene historial propio.
+    public function eliminar(Sesion $sesion): void
+    {
+        DB::transaction(function () use ($sesion) {
+            // Se bloquea la asesoría, igual que en registrar(): si en el mismo instante se está
+            // completando o cancelando, este método espera su turno y ve el estatus ya cambiado.
+            $asesoria = Asesoria::whereKey($sesion->asesoria_id)->lockForUpdate()->firstOrFail();
+
+            // Una asesoría cerrada conserva su historial de sesiones tal como quedó
+            if ($asesoria->estatus !== EstatusAsesoria::EnCurso) {
+                throw ErrorDeNegocio::conflicto('Solo se pueden eliminar sesiones de asesorías en curso.', 'asesoria_no_en_curso');
+            }
+
+            $sesion->delete();
+        });
+    }
 }

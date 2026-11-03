@@ -16,6 +16,17 @@ class Sesion extends Model
         return ['fecha' => 'date'];
     }
 
+    // Cómo Laravel busca la sesión cuando la ruta trae {sesion}.
+    // Sesion no tiene facultad_id ni el trait PerteneceAFacultad, pero Asesoria sí:
+    // whereHas('asesoria') aplica el filtro de facultad de la asesoría, así que una sesión
+    // de otra facultad (o inexistente) devuelve null y Laravel responde 404.
+    public function resolveRouteBinding($value, $field = null): ?Model
+    {
+        return $this->where($field ?? $this->getRouteKeyName(), $value)
+            ->whereHas('asesoria')
+            ->first();
+    }
+
     public function asesoria(): BelongsTo
     {
         return $this->belongsTo(Asesoria::class);

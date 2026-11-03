@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\PerfilController;
 use App\Http\Controllers\Api\V1\RecuperacionController;
 use App\Http\Controllers\Api\V1\SolicitudController;
 use App\Http\Controllers\Api\V1\EstudianteController;
+use App\Http\Controllers\Api\V1\SesionController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -39,6 +40,7 @@ Route::middleware(['auth:sanctum', 'activo'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::get('/catalogos', [CatalogoController::class, 'catalogos']);
     Route::get('/materias', [MateriaController::class, 'index']);
+    Route::get('/asesorias/{asesoria}/sesiones', [SesionController::class, 'index']);
 });
 
 

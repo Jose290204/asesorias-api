@@ -13,4 +13,6 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN docker-php-ext-install opcache
 COPY opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
+COPY uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
 WORKDIR /var/www/html

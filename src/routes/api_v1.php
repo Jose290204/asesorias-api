@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\RecuperacionController;
 use App\Http\Controllers\Api\V1\SolicitudController;
 use App\Http\Controllers\Api\V1\EstudianteController;
 use App\Http\Controllers\Api\V1\SesionController;
+use App\Http\Controllers\Api\V1\MaterialController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -41,6 +42,8 @@ Route::middleware(['auth:sanctum', 'activo'])->group(function () {
     Route::get('/catalogos', [CatalogoController::class, 'catalogos']);
     Route::get('/materias', [MateriaController::class, 'index']);
     Route::get('/asesorias/{asesoria}/sesiones', [SesionController::class, 'index']);
+    Route::get('/asesorias/{asesoria}/material', [MaterialController::class, 'index']);
+    Route::get('/material/{material}/descargar', [MaterialController::class, 'descargar']);
 });
 
 
@@ -79,4 +82,6 @@ Route::prefix('asesor')
         Route::get('/estudiantes', [EstudianteController::class, 'index']);
         Route::post('/asesorias/{asesoria}/sesiones', [SesionController::class, 'registrar']);
         Route::delete('/sesiones/{sesion}', [SesionController::class, 'eliminar']);
+        Route::post('/asesorias/{asesoria}/material', [MaterialController::class, 'subir']);
+        Route::delete('/material/{material}', [MaterialController::class, 'eliminar']);
     });

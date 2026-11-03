@@ -14,6 +14,9 @@ return [
     */
 
     'default' => env('FILESYSTEM_DISK', 'local'),
+    // Disco donde se guardan los archivos de material de las asesorías.
+    // Hoy 'local' (storage/app/private); para pasar a Google Drive basta cambiar MATERIAL_DISK en el .env.
+    'material' => env('MATERIAL_DISK', 'local'),
 
     /*
     |--------------------------------------------------------------------------

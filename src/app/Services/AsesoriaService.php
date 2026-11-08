@@ -33,7 +33,12 @@ class AsesoriaService
             // Relaciones del Resource cargadas de golpe (evita N+1)
             ->with(['materia', 'horario', $otro])
             // Agrega sesiones_count sin cargar las sesiones
-            ->withCount('sesiones')
+            ->withCount([
+                'sesiones',
+                'chats as mensajes_sin_leer_count' => fn ($q) => $q
+                    ->where('usuario_id', '!=', $usuario->id)
+                    ->whereNull('leido_en'),
+            ])
             // Atajo "historial": completadas + canceladas
             ->when(
                 $estatus === 'historial',

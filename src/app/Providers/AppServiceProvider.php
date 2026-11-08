@@ -38,5 +38,12 @@ class AppServiceProvider extends ServiceProvider
                 mb_strtolower((string) $request->input('correo')).'|'.$request->ip()
             );
         });
+
+         // Se usa en la ruta throttle:mensajes (enviar un mensaje al chat).
+        // La clave es el usuario: 30 mensajes por minuto es mucho para una conversación real
+        // y frena el spam. Si por algo no hubiera usuario, cae a la IP.
+        RateLimiter::for('mensajes', function (Request $request) {
+            return Limit::perMinute(30)->by((string) ($request->user()?->id ?? $request->ip()));
+        });
     }
 }

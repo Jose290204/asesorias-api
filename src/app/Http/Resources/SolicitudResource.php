@@ -22,6 +22,7 @@ class SolicitudResource extends JsonResource
             'asesor' => [
                 'id' => $this->asesor->id,
                 'nombre' => trim("{$this->asesor->nombre} {$this->asesor->apellido_paterno} {$this->asesor->apellido_materno}"),
+                'correo' => $this->asesor->correo,
             ],
             'materia' => [
                 'id' => $this->materia->id,

@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\SolicitudController;
 use App\Http\Controllers\Api\V1\EstudianteController;
 use App\Http\Controllers\Api\V1\SesionController;
 use App\Http\Controllers\Api\V1\MaterialController;
+use App\Http\Controllers\Api\V1\ChatController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -44,6 +45,12 @@ Route::middleware(['auth:sanctum', 'activo'])->group(function () {
     Route::get('/asesorias/{asesoria}/sesiones', [SesionController::class, 'index']);
     Route::get('/asesorias/{asesoria}/material', [MaterialController::class, 'index']);
     Route::get('/material/{material}/descargar', [MaterialController::class, 'descargar']);
+    
+     // Chat de la asesoría: lo usan el estudiante y el asesoria, el policy checa y decide quein puede hacer que
+    Route::get('/asesorias/{asesoria}/mensajes', [ChatController::class, 'index']);
+    Route::post('/asesorias/{asesoria}/mensajes', [ChatController::class, 'enviar'])
+        ->middleware('throttle:mensajes');
+    Route::post('/asesorias/{asesoria}/mensajes/leidos', [ChatController::class, 'marcarLeidos']);
 });
 
 

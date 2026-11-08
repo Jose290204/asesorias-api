@@ -18,6 +18,7 @@ class AsesoriaResource extends JsonResource
             'asesor' => $this->whenLoaded('asesor', fn () => [
                 'id' => $this->asesor->id,
                 'nombre' => trim("{$this->asesor->nombre} {$this->asesor->apellido_paterno} {$this->asesor->apellido_materno}"),
+                'correo' => $this->asesor->correo,
             ]),
             'estudiante' => $this->whenLoaded('estudiante', fn () => [
                 'id' => $this->estudiante->id,
@@ -45,6 +46,8 @@ class AsesoriaResource extends JsonResource
             'finalizada_en' => $this->finalizada_en?->toIso8601String(),
             // Solo existe si el service usó withCount('sesiones')
             'sesiones_count' => $this->whenCounted('sesiones'),
+            // Mensajes del chat sin leer para quien consulta; 0 si el service no los contó
+            'mensajes_sin_leer' => (int) ($this->mensajes_sin_leer_count ?? 0),
         ];
     }
 }

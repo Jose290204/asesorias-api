@@ -41,6 +41,10 @@ enum AccionBitacora: string
 
     case DisponibilidadActualizada = 'disponibilidad.actualizada';
 
+    case EstudianteCreado = 'estudiante.creado';
+    case EstudianteEditado = 'estudiante.editado';
+    case EstudianteDadoDeBaja = 'estudiante.baja';
+
     // Para validar filtros: ['sesion.inicio', 'facultad.creada', ...]
     public static function valores(): array
     {

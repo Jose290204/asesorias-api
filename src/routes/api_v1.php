@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\FacultadController;
 use App\Http\Controllers\Api\V1\AdministradorController;
 use App\Http\Controllers\Api\V1\BitacoraController;
+use App\Http\Controllers\Api\V1\Admin\AdminPerfilController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -55,6 +56,17 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
         ->middleware('throttle:mensajes');
     Route::post('/asesorias/{asesoria}/mensajes/leidos', [ChatController::class, 'marcarLeidos']);
 });
+
+
+
+    // Admin de facultad. Prefijo /admin.
+    // También lo recorre el super admin, siempre con X-Facultad-Id (requiere.facultad).
+
+    Route::prefix('admin')
+        ->middleware(['auth:sanctum', 'activo', 'facultad', 'requiere.facultad', 'rol:admin,superadmin'])
+        ->group(function () {
+            Route::get('/perfil', [PerfilController::class, 'admin']);
+        });
 
 
 // Estudiante. Prefijo /estudiante.

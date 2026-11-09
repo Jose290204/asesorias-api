@@ -7,11 +7,11 @@ use App\Models\Usuario;
 
 class SesionPolicy
 {
-    // Solo el asesor asignado a la asesoría elimina sus sesiones.
-    // Se compara por id y no por rol: un asesor par solo elimina las sesiones
-    // de las asesorías que él imparte, nunca las de las que recibe como estudiante.
+       // Elimina sesiones el asesor asignado a la asesoría (por id, no por rol)
+    // y quien administra la facultad.
     public function eliminar(Usuario $usuario, Sesion $sesion): bool
     {
-        return $usuario->id === $sesion->asesoria->asesor_id;
+        return $usuario->puedeAdministrar()
+            || $usuario->id === $sesion->asesoria->asesor_id;
     }
 }

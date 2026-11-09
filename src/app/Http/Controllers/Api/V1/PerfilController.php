@@ -31,4 +31,13 @@ class PerfilController extends Controller
 
         return new PerfilResource($usuario);
     }
+
+        // GET /admin/perfil (también lo usa el super admin dentro de una facultad)
+    public function admin(Request $request): PerfilResource
+    {
+        $usuario = $request->user();
+        $usuario->setAttribute('estadisticas', $this->estadisticas->delAdmin());
+
+        return new PerfilResource($usuario);
+    }
 }

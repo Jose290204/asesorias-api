@@ -110,4 +110,13 @@ class Usuario extends Authenticatable
     {
         return implode(' ', array_filter([$this->nombre, $this->apellido_paterno, $this->apellido_materno]));
     }
+
+        /**
+     * ¿Puede administrar la facultad en la que está operando?
+     * (admin de facultad o super admin)
+     */
+    public function puedeAdministrar(): bool
+    {
+        return $this->tieneRol(Rol::Admin) || $this->esSuperAdmin();
+    }
 }

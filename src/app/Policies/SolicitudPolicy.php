@@ -22,9 +22,10 @@ class SolicitudPolicy
         return $solicitud->estudiante_id === $usuario->id;
     }
 
-    //solo el asesor al que se le hizo la solicitud puede rechazar o aceptar 
-    public function responder(Usuario $usuario, Solicitud $solicitud): bool
-    {
-        return $solicitud->asesor_id === $usuario->id;
-    }
+   // Solo el asesor al que se le hizo la solicitud, o el admin de la facultad en su lugar.
+// El admin llega aquí ya filtrado por FacultadScope: una solicitud de otra facultad da 404 antes.
+public function responder(Usuario $usuario, Solicitud $solicitud): bool
+{
+    return $solicitud->asesor_id === $usuario->id || $usuario->puedeAdministrar();
+}
 }

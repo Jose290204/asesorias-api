@@ -1285,3 +1285,15 @@ it('aad listar: rechaza con 422 una modalidad, una razón o ids inválidos en lo
             ->assertUnprocessable();
     }
 });
+
+it('aad chat: el admin no puede marcar mensajes como leídos', function () {
+    ['admin' => $admin, 'asesoria' => $asesoria, 'estudiante' => $estudiante] = aadEscenario();
+
+    $mensaje = $asesoria->chats()->create(['usuario_id' => $estudiante->id, 'mensaje' => 'Hola']);
+
+    $this->withToken(aadToken($admin))
+        ->postJson("/api/v1/asesorias/{$asesoria->id}/mensajes/leidos")
+        ->assertForbidden();
+
+    expect($mensaje->fresh()->leido_en)->toBeNull();
+});

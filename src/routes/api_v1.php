@@ -80,6 +80,9 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
             Route::get('/estudiantes', [EstudianteController::class, 'indexAdmin']);
             Route::get('/asesores', [AsesorController::class, 'indexAdmin']);
             Route::get('/asesores/{asesor}/disponibilidad', [DisponibilidadController::class, 'mostrarDeAsesor'])->whereNumber('asesor');
+            Route::get('/solicitudes', [SolicitudController::class, 'indexAdmin']);
+            Route::post('/solicitudes/{solicitud}/aceptar', [SolicitudController::class, 'aceptar']);
+            Route::post('/solicitudes/{solicitud}/rechazar', [SolicitudController::class, 'rechazar']);
         });
 
 

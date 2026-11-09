@@ -383,6 +383,7 @@ it('solicitudes no choca con una solicitud de otro estudiante en el mismo horari
 
     $this->withToken(solToken(solEstudiante()))->postJson(URL_SOLICITUDES, $payload)->assertCreated();
 
-    // Mismo asesor, materia, horario y fecha, pero OTRO estudiante: no es duplicado
+       // Mismo asesor, materia, horario y fecha, pero OTRO estudiante: no es duplicado
+    $this->app['auth']->forgetGuards();
     $this->withToken(solToken(solEstudiante()))->postJson(URL_SOLICITUDES, $payload)->assertCreated();
 });

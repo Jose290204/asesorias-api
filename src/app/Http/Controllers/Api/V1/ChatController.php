@@ -39,7 +39,8 @@ class ChatController extends Controller
     // POST /asesorias/{asesoria}/mensajes/leidos: marca como leídos los mensajes de la otra persona.
     public function marcarLeidos(Request $request, Asesoria $asesoria, ChatService $chat): JsonResponse
     {
-        Gate::authorize('leer', [Chat::class, $asesoria]);
+        // Solo quien es parte de la conversación puede marcar como leído (el admin solo lee)
+        Gate::authorize('escribir', [Chat::class, $asesoria]);
 
         return response()->json([
             'marcados' => $chat->marcarLeidos($asesoria, $request->user()),

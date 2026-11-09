@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 use App\Http\Requests\RechazarSolicitudRequest;
 use App\Http\Requests\EditarSolicitudRequest;
+use App\Http\Requests\ListarSolicitudesAdminRequest;
 
 class SolicitudController extends Controller
 {
@@ -76,6 +77,14 @@ class SolicitudController extends Controller
     {
         return new SolicitudResource(
             $this->solicitudes->editar($request->user(), $solicitud, $request->validated())
+        );
+    }
+
+        // GET /admin/solicitudes (?estatus=&asesor_id=&estudiante_id=&buscar=)
+    public function indexAdmin(ListarSolicitudesAdminRequest $request)
+    {
+        return SolicitudResource::collection(
+            $this->solicitudes->listarTodas($request->validated())
         );
     }
 }

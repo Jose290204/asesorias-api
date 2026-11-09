@@ -68,7 +68,7 @@ class SolicitudService
             'nota_estudiante' => $datos['nota'] ?? null,
         ]);
 
-       $solicitud->load(['asesor', 'materia', 'horario']);
+        $solicitud->load(['asesor', 'materia', 'horario']);
 
         $this->bitacora(
             AccionBitacora::SolicitudCreada,
@@ -79,7 +79,7 @@ class SolicitudService
         return $solicitud;
     }
 
-        // Lista las solicitudes del usuario según el rol con el que consulta.
+    // Lista las solicitudes del usuario según el rol con el que consulta.
     // $como llega desde la ruta ('estudiante' o 'asesor'); decide por qué columna se filtra.
     // Un asesor par usa las dos rutas y en cada una ve solo lo suyo en ese rol.
     public function listar(Usuario $usuario, string $como, ?EstatusSolicitud $estatus): LengthAwarePaginator
@@ -94,6 +94,30 @@ class SolicitudService
             // Relaciones que el Resource necesita, cargadas de golpe (evita N+1)
             ->with(['estudiante', 'asesor', 'materia', 'horario'])
             // Más recientes primero; el id desempata
+            ->latest('id')
+            ->paginate(10);
+    }
+
+    // Admin: todas las solicitudes de la facultad (FacultadScope ya filtra por facultad).
+    // Filtros opcionales: estatus, asesor_id, estudiante_id y buscar.
+    // buscar: nombre del estudiante o del asesor (texto contiguo, igual que las otras búsquedas).
+    public function listarTodas(array $filtros): LengthAwarePaginator
+    {
+        $buscar = isset($filtros['buscar']) ? trim($filtros['buscar']) : '';
+        $nombre = "CONCAT_WS(' ', nombre, apellido_paterno, apellido_materno) like ?";
+
+        return Solicitud::query()
+            ->when($filtros['estatus'] ?? null, fn ($q, $estatus) => $q->where('estatus', $estatus))
+            ->when($filtros['asesor_id'] ?? null, fn ($q, $id) => $q->where('asesor_id', $id))
+            ->when($filtros['estudiante_id'] ?? null, fn ($q, $id) => $q->where('estudiante_id', $id))
+            ->when($buscar !== '', function ($q) use ($buscar, $nombre) {
+                $like = '%'.$buscar.'%';
+
+                $q->where(fn ($w) => $w
+                    ->whereHas('estudiante', fn ($u) => $u->whereRaw($nombre, [$like]))
+                    ->orWhereHas('asesor', fn ($u) => $u->whereRaw($nombre, [$like])));
+            })
+            ->with(['estudiante', 'asesor', 'materia', 'horario'])
             ->latest('id')
             ->paginate(10);
     }
@@ -143,35 +167,35 @@ class SolicitudService
 
     public function cancelar(Solicitud $solicitud): Solicitud
     {
-         // se hace todo en una transaccion
+        // se hace todo en una transaccion
         return DB::transaction(function () use ($solicitud) {
 
-        // Vuelve a leer la fila desde la BD y la BLOQUEA (lockForUpdate) hasta que
-        // termine la transacción. Si el asesor la está aceptando justo ahora, esta línea
-        // espera su turno. firstOrFail() lanza 404 si la fila ya no existe.
-        $actual = Solicitud::whereKey($solicitud->id)->lockForUpdate()->firstOrFail();
+            // Vuelve a leer la fila desde la BD y la BLOQUEA (lockForUpdate) hasta que
+            // termine la transacción. Si el asesor la está aceptando justo ahora, esta línea
+            // espera su turno. firstOrFail() lanza 404 si la fila ya no existe.
+            $actual = Solicitud::whereKey($solicitud->id)->lockForUpdate()->firstOrFail();
 
-        // solo se cancela solicitudes pendientes
-        if ($actual->estatus !== EstatusSolicitud::Pendiente) {
-            throw ErrorDeNegocio::conflicto('Solo se pueden cancelar solicitudes pendientes.', 'solicitud_no_pendiente');
-        }
+            // solo se cancela solicitudes pendientes
+            if ($actual->estatus !== EstatusSolicitud::Pendiente) {
+                throw ErrorDeNegocio::conflicto('Solo se pueden cancelar solicitudes pendientes.', 'solicitud_no_pendiente');
+            }
 
-        // No se borra: se cambia el estatus y se anota cuándo se cerró
-        $actual->update([
-            'estatus' => EstatusSolicitud::Cancelada,
-            'respondida_en' => now(),
-        ]);
+            // No se borra: se cambia el estatus y se anota cuándo se cerró
+            $actual->update([
+                'estatus' => EstatusSolicitud::Cancelada,
+                'respondida_en' => now(),
+            ]);
 
-        $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
+            $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
 
-        $this->bitacora(AccionBitacora::SolicitudCancelada, $actual, 'Canceló su solicitud.');
+            $this->bitacora(AccionBitacora::SolicitudCancelada, $actual, 'Canceló su solicitud.');
 
-        return $actual;
-    });
+            return $actual;
+        });
     }
 
-    // El asesor rechaza una solicitud pendiente y deja el motivo.
-    // con el estudiante cancelando, o con el propio asesor aceptando, en el mismo instante.
+    // Rechaza una solicitud pendiente y deja el motivo. Lo usa el asesor, o el admin en su lugar.
+    // Se bloquea la fila para no chocar con el estudiante cancelando o con otra respuesta al mismo instante.
     public function rechazar(Solicitud $solicitud, string $motivo): Solicitud
     {
         return DB::transaction(function () use ($solicitud, $motivo) {
@@ -189,7 +213,7 @@ class SolicitudService
                 'respondida_en' => now(),
             ]);
 
-              $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
+            $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
 
             $this->bitacora(
                 AccionBitacora::SolicitudRechazada,
@@ -201,14 +225,15 @@ class SolicitudService
         });
     }
 
-        // Motivo que ve el estudiante cuando el sistema rechaza su solicitud porque el cupo se ocupó
+    // Motivo que ve el estudiante cuando el sistema rechaza su solicitud porque el cupo se ocupó
     private const MOTIVO_CUPO_TOMADO = 'Este horario ya fue tomado por otra solicitud aceptada.';
 
-    // El asesor acepta una solicitud pendiente: crea la asesoría y rechaza a las competidoras.
+    // Acepta una solicitud pendiente (el asesor, o el admin en su lugar):
+    // crea la asesoría y rechaza a las competidoras.
     public function aceptar(Solicitud $solicitud): Solicitud
     {
         return DB::transaction(function () use ($solicitud) {
-            // Se bloquea la fila del ASESOR primero. Así dos aceptaciones del mismo asesor
+            // 1. Se bloquea la fila del ASESOR primero. Así dos aceptaciones del mismo asesor
             //    (aunque sean de solicitudes distintas) se hacen una tras otra y la segunda
             //    ya ve el horario ocupado por la primera.
             Usuario::whereKey($solicitud->asesor_id)->lockForUpdate()->firstOrFail();
@@ -223,7 +248,7 @@ class SolicitudService
             // El día de la semana sale de fecha_inicio (lunes a viernes; las solicitudes nunca caen en fin de semana)
             $dia = Dia::desdeFecha($actual->fecha_inicio);
 
-            // ¿El asesor ya tiene una asesoría EN CURSO en ese día de la semana y ese horario?
+            // 3. ¿El asesor ya tiene una asesoría EN CURSO en ese día de la semana y ese horario?
             $ocupado = Asesoria::where('asesor_id', $actual->asesor_id)
                 ->where('estatus', EstatusAsesoria::EnCurso)
                 ->where('horario_id', $actual->horario_id)
@@ -231,7 +256,8 @@ class SolicitudService
                 ->contains(fn ($a) => Dia::desdeFecha($a->fecha_inicio) === $dia);
 
             if ($ocupado) {
-                throw ErrorDeNegocio::conflicto('Ya tienes una asesoría en curso en ese día y horario.', 'horario_ocupado');
+                // Neutro: lo puede leer el asesor o el admin que acepta en su lugar
+                throw ErrorDeNegocio::conflicto('El asesor ya tiene una asesoría en curso en ese día y horario.', 'horario_ocupado');
             }
 
             // 4. La solicitud queda aceptada
@@ -256,7 +282,7 @@ class SolicitudService
                 'fecha_inicio' => $actual->fecha_inicio,
             ]);
 
-            // sen buscan las otras solicitudes pendientes del mismo asesor + mismo horario + mismo día de la semana
+            // 6. Se buscan las otras solicitudes pendientes del mismo asesor + mismo horario + mismo día de la semana
             $competidoras = Solicitud::where('asesor_id', $actual->asesor_id)
                 ->where('horario_id', $actual->horario_id)
                 ->where('estatus', EstatusSolicitud::Pendiente)
@@ -293,7 +319,7 @@ class SolicitudService
         });
     }
 
-        // El estudiante edita su solicitud pendiente: fecha, horario y/o nota.
+    // El estudiante edita su solicitud pendiente: fecha, horario y/o nota.
     // Mismas reglas que crear(), y la propia solicitud no cuenta como duplicado.
     public function editar(Usuario $estudiante, Solicitud $solicitud, array $datos): Solicitud
     {
@@ -371,11 +397,9 @@ class SolicitudService
 
             return $actual;
         });
-
-        
     }
 
-        // Campos de editar() que se muestran en la bitácora
+    // Campos de editar() que se muestran en la bitácora
     private const CAMPOS_EDITABLES = [
         'fecha_inicio' => 'fecha',
         'horario_id' => 'horario',

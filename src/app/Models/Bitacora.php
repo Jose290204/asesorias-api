@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Concerns\PerteneceAFacultad;
 use App\Support\ContextoFacultad;
-use Illuminate\Support\Facades\Auth;
 use Throwable;
 
 class Bitacora extends Model
@@ -46,16 +45,21 @@ class Bitacora extends Model
     {
         return static::where('created_at', '<', now()->subYear());
     }
-
-    // Un fallo al registrar nunca debe romper la acción principal
-    public static function registrar(string $accion, ?Model $entidad = null, array $detalles = []): void
+    // Un fallo al registrar nunca debe romper la acción principal.
+    // $facultadId explícito: para acciones sobre una facultad desde el panel del super admin.
+    public static function registrar(string $accion, ?Model $entidad = null, array $detalles = [], ?int $facultadId = null): void
     {
         try {
             $usuario = Auth::user();
 
             static::create([
-                'facultad_id'  => app(ContextoFacultad::class)->id() ?? $usuario?->facultad_id,
+                'facultad_id'  => $facultadId ?? app(ContextoFacultad::class)->id() ?? $usuario?->facultad_id,
                 'usuario_id'   => $usuario?->id,
+                'accion'       => $accion,
+                'entidad_type' => $entidad?->getMorphClass(),
+                'entidad_id'   => $entidad?->getKey(),
+                'detalles'     => $detalles ?: null,
+                'ip'           => request()->ip(),
             ]);
         } catch (Throwable $e) {
             report($e);

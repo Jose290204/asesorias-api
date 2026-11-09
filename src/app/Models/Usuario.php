@@ -10,10 +10,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Usuario extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected $table = 'usuarios';
 
@@ -62,6 +64,15 @@ class Usuario extends Authenticatable
     public function esSuperAdmin(): bool
     {
         return $this->tieneRol(Rol::SuperAdmin);
+    }
+
+        // Administradores de facultad: tienen el rol Admin y no son super admin.
+    // Lo usan el listado y el binding {administrador} del panel del super admin.
+    public function scopeAdministradores(Builder $query): Builder
+    {
+        return $query
+            ->whereHas('roles', fn ($q) => $q->where('rol_id', Rol::Admin->value))
+            ->whereDoesntHave('roles', fn ($q) => $q->where('rol_id', Rol::SuperAdmin->value));
     }
 
     public function asignarRol(Rol $rol): void

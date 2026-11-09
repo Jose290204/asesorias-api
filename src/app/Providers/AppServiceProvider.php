@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use App\Support\ContextoFacultad;
+use App\Models\Usuario;
+use Illuminate\Support\Facades\Route;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -18,6 +20,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+
+        // {administrador} solo resuelve a un administrador de facultad (no a un super admin,
+        // asesor o estudiante) y que no esté eliminado: cualquier otro id da 404
+        Route::bind('administrador', fn (string $valor) => Usuario::administradores()->findOrFail($valor));
         // Se usa en rutas como throttle:login
         // La clave es correo + IP: frena la fuerza bruta desde una red sin que
         // alguien pueda bloquear a otra persona solo por conocer su correo

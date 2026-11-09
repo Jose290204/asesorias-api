@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\V1\EstudianteController;
 use App\Http\Controllers\Api\V1\SesionController;
 use App\Http\Controllers\Api\V1\MaterialController;
 use App\Http\Controllers\Api\V1\ChatController;
+use App\Http\Controllers\Api\V1\FacultadController;
+use App\Http\Controllers\Api\V1\AdministradorController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -91,4 +93,24 @@ Route::prefix('asesor')
         Route::delete('/sesiones/{sesion}', [SesionController::class, 'eliminar']);
         Route::post('/asesorias/{asesoria}/material', [MaterialController::class, 'subir']);
         Route::delete('/material/{material}', [MaterialController::class, 'eliminar']);
+    });
+
+
+
+// Super admin. Prefijo /superadmin.
+// Sin 'facultad': aquí el super admin trabaja en modo global, no dentro de una facultad.
+
+Route::prefix('superadmin')
+    ->middleware(['auth:sanctum', 'activo', 'rol:superadmin'])
+    ->group(function () {
+        Route::get('/facultades', [FacultadController::class, 'index']);
+        Route::post('/facultades', [FacultadController::class, 'store']);
+        // Laravel no lee archivos en un PUT real: el front manda POST con _method=PUT
+        Route::put('/facultades/{facultad}', [FacultadController::class, 'update']);
+        Route::patch('/facultades/{facultad}/estado', [FacultadController::class, 'estado']);
+        Route::get('/administradores', [AdministradorController::class, 'index']);
+        Route::post('/administradores', [AdministradorController::class, 'store']);
+        Route::put('/administradores/{administrador}', [AdministradorController::class, 'update']);
+        Route::patch('/administradores/{administrador}/estado', [AdministradorController::class, 'estado']);
+        Route::delete('/administradores/{administrador}', [AdministradorController::class, 'destroy']);
     });

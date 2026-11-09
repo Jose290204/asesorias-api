@@ -7,6 +7,7 @@ use App\Http\Requests\GuardarDisponibilidadRequest;
 use App\Http\Resources\DisponibilidadResource;
 use App\Services\DisponibilidadService;
 use Illuminate\Http\Request;
+use App\Services\AsesorService;
 
 class DisponibilidadController extends Controller
 {
@@ -32,6 +33,14 @@ class DisponibilidadController extends Controller
         //asei el front no necesita hacer un get despues de guardar
         return new DisponibilidadResource(
             $this->disponibilidad->reemplazar($request->user(), $request->validated())
+        );
+    }
+
+        // GET /admin/asesores/{asesor}/disponibilidad: lo que imparte un asesor de la facultad en contexto
+    public function mostrarDeAsesor(int $asesor, AsesorService $asesores): DisponibilidadResource
+    {
+        return new DisponibilidadResource(
+            $this->disponibilidad->obtener($asesores->encontrarEnFacultad($asesor))
         );
     }
 }

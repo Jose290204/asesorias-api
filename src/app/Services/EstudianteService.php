@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\EstatusUsuario;
 use App\Enums\Rol;
 use App\Models\Usuario;
+use App\Support\ContextoFacultad;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -21,6 +22,17 @@ class EstudianteService
             ->whereHas('roles', fn (Builder $q) => $q->where('rol_id', Rol::Estudiante->value));
     }
 
+    // "Qué estudiantes ve el admin": todos los activos de la facultad en contexto
+    // (la del admin, o la que eligió el super admin con X-Facultad-Id).
+    // Usuario no tiene FacultadScope, por eso la facultad se filtra a mano.
+    public function enFacultad(): Builder
+    {
+        return Usuario::query()
+            ->where('facultad_id', app(ContextoFacultad::class)->id())
+            ->where('estatus', EstatusUsuario::Activo->value)
+            ->whereHas('roles', fn (Builder $q) => $q->where('rol_id', Rol::Estudiante->value));
+    }
+
     // Un estudiante visible para este asesor, o 404 (no existe, otra facultad,
     // sin rol de estudiante, inactivo o el propio asesor: misma respuesta)
     public function encontrar(Usuario $asesor, int $id): Usuario
@@ -28,15 +40,26 @@ class EstudianteService
         return $this->visibles($asesor)->findOrFail($id);
     }
 
-    // Lista para el autocompletado de "Crear asesoría".
+    // Lista para el autocompletado de "Crear asesoría" (vista del asesor).
     // $buscar filtra por nombre completo (nombre + apellidos) o por número de cuenta.
     public function buscar(Usuario $asesor, ?string $buscar): LengthAwarePaginator
     {
-        return $this->visibles($asesor)
+        return $this->listar($this->visibles($asesor), $buscar);
+    }
+
+    // Lo mismo para el admin: toda la facultad en contexto
+    public function buscarEnFacultad(?string $buscar): LengthAwarePaginator
+    {
+        return $this->listar($this->enFacultad(), $buscar);
+    }
+
+    private function listar(Builder $consulta, ?string $buscar): LengthAwarePaginator
+    {
+        return $consulta
             // El Resource muestra el nombre del grupo: se carga de golpe (evita N+1)
             ->with('grupo')
             ->when($buscar, function (Builder $consulta) use ($buscar) {
-                // Los OR van agrupados: sin el grupo se saltarían los filtros de visibles()
+                // Los OR van agrupados: sin el grupo se saltarían los filtros de la consulta base
                 $consulta->where(function (Builder $q) use ($buscar) {
                     // CONCAT_WS une nombre y apellidos con espacio: "Luis Pérez" encuentra a Luis Pérez Gámez
                     $q->whereRaw("CONCAT_WS(' ', nombre, apellido_paterno, apellido_materno) like ?", ["%{$buscar}%"])

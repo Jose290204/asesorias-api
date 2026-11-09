@@ -9,6 +9,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Horario;
 use App\Models\CicloEscolar;
 use Illuminate\Http\JsonResponse;
+use App\Models\Grupo;
+use App\Models\Licenciatura;
 
 class CatalogoController extends Controller
 {
@@ -25,6 +27,12 @@ class CatalogoController extends Controller
             'modalidades' => $aLista(Modalidad::cases()),
             'razones' => $aLista(RazonAsesoria::cases()),
             'dias' => $aLista(Dia::cases()),
+            // Para los filtros del administrador. Licenciatura ya filtra por facultad;
+            // los grupos llegan a la facultad por su licenciatura.
+            'licenciaturas' => Licenciatura::orderBy('nombre')->get(['id', 'nombre']),
+            'grupos' => Grupo::whereHas('licenciatura')
+                ->orderBy('nombre')
+                ->get(['id', 'licenciatura_id', 'nombre', 'modalidad']),
             'ciclo_escolar' => CicloEscolar::vigente()->first(['id', 'nombre', 'periodo']),
         ]);
     }

@@ -11,6 +11,10 @@ use App\Models\Asesoria;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\CancelarAsesoriaRequest;
 use App\Http\Requests\CrearAsesoriaRequest;
+use App\Http\Requests\CrearAsesoriaAdminRequest;
+use App\Http\Requests\ListarAsesoriasAdminRequest;
+use App\Services\AsesorService;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AsesoriaController extends Controller
 {
@@ -65,5 +69,26 @@ class AsesoriaController extends Controller
         return new AsesoriaResource(
             $asesorias->editar($asesoria, $request->validated())
         );
+    }
+
+    
+    // GET /admin/asesorias (?estatus=&buscar=&asesor_id=&materia_id=&ciclo_id=)
+    public function indexAdmin(ListarAsesoriasAdminRequest $request): AnonymousResourceCollection
+    {
+        return AsesoriaResource::collection(
+            $this->asesorias->listarTodas($request->validated())
+        );
+    }
+
+    // POST /admin/asesorias: el administrador crea la asesoría en nombre de un asesor.
+    // Se reutiliza crear(): las validaciones corren contra la disponibilidad de ese asesor.
+    public function crearAdmin(CrearAsesoriaAdminRequest $request, AsesorService $asesores): AsesoriaResource
+    {
+        $datos = $request->validated();
+
+        // 404 si el asesor no es de esta facultad, no está activo o no tiene el rol
+        $asesor = $asesores->encontrarEnFacultad((int) $datos['asesor_id']);
+
+        return new AsesoriaResource($this->asesorias->crear($asesor, $datos));
     }
 }

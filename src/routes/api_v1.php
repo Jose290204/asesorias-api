@@ -66,6 +66,20 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
         ->middleware(['auth:sanctum', 'activo', 'facultad', 'requiere.facultad', 'rol:admin,superadmin'])
         ->group(function () {
             Route::get('/perfil', [PerfilController::class, 'admin']);
+            // Asesorías de la facultad. Los métodos son los mismos del asesor:
+            // las policies (gestionar, ver, eliminar) ya admiten a quien administra.
+            Route::get('/asesorias', [AsesoriaController::class, 'indexAdmin']);
+            Route::post('/asesorias', [AsesoriaController::class, 'crearAdmin']);
+            Route::patch('/asesorias/{asesoria}', [AsesoriaController::class, 'editar']);
+            Route::post('/asesorias/{asesoria}/completar', [AsesoriaController::class, 'completar']);
+            Route::post('/asesorias/{asesoria}/cancelar', [AsesoriaController::class, 'cancelar']);
+            Route::post('/asesorias/{asesoria}/sesiones', [SesionController::class, 'registrar']);
+            Route::delete('/sesiones/{sesion}', [SesionController::class, 'eliminar']);
+            Route::post('/asesorias/{asesoria}/material', [MaterialController::class, 'subir']);
+            Route::delete('/material/{material}', [MaterialController::class, 'eliminar']);
+            Route::get('/estudiantes', [EstudianteController::class, 'indexAdmin']);
+            Route::get('/asesores', [AsesorController::class, 'indexAdmin']);
+            Route::get('/asesores/{asesor}/disponibilidad', [DisponibilidadController::class, 'mostrarDeAsesor'])->whereNumber('asesor');
         });
 
 

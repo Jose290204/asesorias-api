@@ -68,6 +68,55 @@ class AsesoriaService
             ->paginate(10);
     }
 
+        // Lista de la facultad en contexto para el administrador: no filtra por asesor ni
+    // por estudiante, así que carga a los dos. El filtro de facultad lo pone el scope del modelo.
+    // $filtros viene de $request->validated(): estatus, buscar, asesor_id, materia_id, ciclo_id.
+    public function listarTodas(array $filtros): LengthAwarePaginator
+    {
+        $estatus = $filtros['estatus'] ?? null;
+
+        return Asesoria::query()
+            ->with(['materia', 'horario', 'asesor', 'estudiante'])
+            ->withCount('sesiones')
+            ->when(
+                $estatus === 'historial',
+                fn ($q) => $q->whereIn('estatus', [EstatusAsesoria::Completada, EstatusAsesoria::Cancelada])
+            )
+            ->when(
+                $estatus && $estatus !== 'historial',
+                fn ($q) => $q->where('estatus', $estatus)
+            )
+            ->when($filtros['asesor_id'] ?? null, fn ($q, $id) => $q->where('asesor_id', $id))
+            ->when($filtros['materia_id'] ?? null, fn ($q, $id) => $q->where('materia_id', $id))
+            ->when($filtros['ciclo_id'] ?? null, fn ($q, $id) => $q->where('ciclo_escolar_id', $id))
+            // La licenciatura de una asesoría es la de su materia
+            ->when($filtros['licenciatura_id'] ?? null, fn ($q, $id) => $q->whereHas(
+                'materia',
+                fn ($m) => $m->where('licenciatura_id', $id)
+            ))
+            ->when($filtros['grupo_id'] ?? null, fn ($q, $id) => $q->where('grupo_id', $id))
+            ->when($filtros['modalidad'] ?? null, fn ($q, $valor) => $q->where('modalidad', $valor))
+            ->when($filtros['horario_id'] ?? null, fn ($q, $id) => $q->where('horario_id', $id))
+            ->when($filtros['razon'] ?? null, fn ($q, $valor) => $q->where('razon', $valor))
+            ->when($filtros['buscar'] ?? null, function ($q, $buscar) {
+                // Los OR van agrupados: sin el grupo se saltarían los demás filtros
+                $q->where(function ($q) use ($buscar) {
+                    $q->whereHas('materia', fn ($m) => $m->where('nombre', 'like', "%{$buscar}%"))
+                      ->orWhereHas('asesor', fn ($u) => $u->whereRaw(
+                          "CONCAT_WS(' ', nombre, apellido_paterno, apellido_materno) like ?",
+                          ["%{$buscar}%"]
+                      ))
+                      ->orWhereHas('estudiante', fn ($u) => $u->whereRaw(
+                          "CONCAT_WS(' ', nombre, apellido_paterno, apellido_materno) like ?",
+                          ["%{$buscar}%"]
+                      ));
+                });
+            })
+            ->orderByDesc('fecha_inicio')
+            ->orderByDesc('id')
+            ->paginate(10);
+    }
+
     // El asesor da de alta una asesoría directa (sin solicitud). Nace "en_curso".
     public function crear(Usuario $asesor, array $datos): Asesoria
     {

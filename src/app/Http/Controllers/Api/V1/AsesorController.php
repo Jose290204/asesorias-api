@@ -23,4 +23,12 @@ class AsesorController extends Controller
             $this->asesores->buscar($request->user(), $request->validated())
         );
     }
+
+        // GET /admin/asesores: asesores de la facultad en contexto, con su disponibilidad
+    public function indexAdmin(ListarAsesoresRequest $request): AnonymousResourceCollection
+    {
+        return AsesorResource::collection(
+            $this->asesores->buscarEnFacultad($request->validated())
+        );
+    }
 }

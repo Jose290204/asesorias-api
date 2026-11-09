@@ -18,4 +18,12 @@ class EstudianteController extends Controller
             $estudiantes->buscar($request->user(), $request->validated('buscar'))
         );
     }
+
+        // GET /admin/estudiantes?buscar=: lo mismo, pero de toda la facultad en contexto
+    public function indexAdmin(ListarEstudiantesRequest $request, EstudianteService $estudiantes): AnonymousResourceCollection
+    {
+        return EstudianteResource::collection(
+            $estudiantes->buscarEnFacultad($request->validated('buscar'))
+        );
+    }
 }

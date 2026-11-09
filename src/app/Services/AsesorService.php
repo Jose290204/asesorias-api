@@ -6,6 +6,7 @@ use App\Enums\Dia;
 use App\Enums\EstatusUsuario;
 use App\Enums\Rol;
 use App\Models\Usuario;
+use App\Support\ContextoFacultad;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -36,12 +37,57 @@ class AsesorService
             ->whereHas('disponibilidadModalidades');
     }
 
+    // Base del admin: asesores activos de la facultad en contexto (la del admin, o la que
+    // eligió el super admin con X-Facultad-Id). NO exige disponibilidad: un asesor recién
+    // dado de alta todavía no la tiene y el admin debe poder encontrarlo para armársela.
+    private function enFacultad(): Builder
+    {
+        return Usuario::query()
+            ->where('facultad_id', app(ContextoFacultad::class)->id())
+            ->where('estatus', EstatusUsuario::Activo->value)
+            ->whereHas('roles', fn (Builder $q) => $q->where('rol_id', Rol::Asesor->value));
+    }
+
     // $filtros viene de $request->validated(): buscar, materia_id, modalidad, fecha, horario_id.
-    // Un Builder es un objeto: cada filtro lo modifica directamente, no hace falta devolverlo
     public function buscar(Usuario $estudiante, array $filtros): LengthAwarePaginator
     {
-        $consulta = $this->visibles($estudiante);
+        return $this->listar($this->visibles($estudiante), $filtros);
+    }
 
+    // Lo mismo para el admin ("Crear asesoría"). Aquí sí se piden materias, horarios y
+    // modalidades: un asesor sin disponibilidad no puede recibir asesorías.
+    public function buscarEnFacultad(array $filtros): LengthAwarePaginator
+    {
+        $consulta = $this->enFacultad()
+            ->whereHas('disponibilidadMaterias')
+            ->whereHas('disponibilidadHorarios')
+            ->whereHas('disponibilidadModalidades');
+
+        return $this->listar($consulta, $filtros);
+    }
+
+    // Un asesor visible para este estudiante, o 404. Se usa en el detalle y en horarios-disponibles
+    public function encontrar(Usuario $estudiante, int $id): Usuario
+    {
+        // findOrFail lanza ModelNotFoundException y bootstrap/app.php la convierte en el 404 JSON.
+        // No existe, otra facultad, no es asesor, inactivo o es el propio estudiante: misma respuesta
+        return $this->visibles($estudiante)
+            ->with(self::RELACIONES)
+            ->findOrFail($id);
+    }
+
+    // Un asesor activo de la facultad en contexto, o 404 (no existe, otra facultad,
+    // no es asesor o está inactivo: misma respuesta). No exige disponibilidad.
+    public function encontrarEnFacultad(int $id): Usuario
+    {
+        return $this->enFacultad()
+            ->with(self::RELACIONES)
+            ->findOrFail($id);
+    }
+
+    // Filtros + relaciones + orden + paginación, comunes a la vista del estudiante y a la del admin
+    private function listar(Builder $consulta, array $filtros): LengthAwarePaginator
+    {
         $this->filtrarPorNombre($consulta, $filtros['buscar'] ?? null);
         $this->filtrarPorMateria($consulta, $filtros['materia_id'] ?? null);
         $this->filtrarPorModalidad($consulta, $filtros['modalidad'] ?? null);
@@ -55,16 +101,6 @@ class AsesorService
             // El id desempata: la paginación no repite ni salta asesores con el mismo nombre
             ->orderBy('id')
             ->paginate(10);
-    }
-
-    // Un asesor visible para este estudiante, o 404. Se usa en el detalle y en horarios-disponibles
-    public function encontrar(Usuario $estudiante, int $id): Usuario
-    {
-        // findOrFail lanza ModelNotFoundException y bootstrap/app.php la convierte en el 404 JSON.
-        // No existe, otra facultad, no es asesor, inactivo o es el propio estudiante: misma respuesta
-        return $this->visibles($estudiante)
-            ->with(self::RELACIONES)
-            ->findOrFail($id);
     }
 
     // ---------- Filtros: si el valor no llegó, no hacen nada ----------

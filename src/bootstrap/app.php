@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Middleware\ForzarJson;
+use App\Http\Middleware\RequiereFacultad;
 use App\Http\Middleware\RequiereRol;
+use App\Http\Middleware\ResolverFacultad;
 use App\Http\Middleware\UsuarioActivo;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -40,12 +42,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'activo' => UsuarioActivo::class,
             'rol' => RequiereRol::class,
+            'facultad' => ResolverFacultad::class,
+            'requiere.facultad' => RequiereFacultad::class,
         ]);
 
         // "activo" y "rol" corren ANTES de buscar el modelo de la ruta ({asesoria}):
-        // quien no tiene permiso recibe siempre el mismo error y no sabe si el registro existe
+        // quien no tiene permiso recibe siempre el mismo error y no sabe si el registro existe.
+        // Después van "facultad" (resuelve en qué facultad se trabaja) y "requiere.facultad"
+        // (exige que haya una). Cada llamada se inserta justo antes de SubstituteBindings,
+        // así que el orden final es el de estas líneas.
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: UsuarioActivo::class);
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: RequiereRol::class);
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: ResolverFacultad::class);
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: RequiereFacultad::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Sin sesión válida: 401 en JSON (solo para rutas /api)

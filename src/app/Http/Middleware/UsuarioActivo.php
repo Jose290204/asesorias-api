@@ -20,6 +20,14 @@ class UsuarioActivo
             ], 403);
         }
 
+        // Los usuarios de una facultad desactivada no pueden usar la API (el super admin sí)
+        if (! $usuario->esSuperAdmin() && ! $usuario->facultad?->activa) {
+            return response()->json([
+                'message' => 'Tu facultad está desactivada.',
+                'codigo'  => 'facultad_inactiva',
+            ], 403);
+        }
+
         return $next($request);
     }
 }

@@ -7,6 +7,7 @@ use App\Enums\Modalidad;
 use App\Enums\RazonAsesoria;
 use App\Http\Controllers\Controller;
 use App\Models\Horario;
+use App\Models\CicloEscolar;
 use Illuminate\Http\JsonResponse;
 
 class CatalogoController extends Controller
@@ -24,6 +25,7 @@ class CatalogoController extends Controller
             'modalidades' => $aLista(Modalidad::cases()),
             'razones' => $aLista(RazonAsesoria::cases()),
             'dias' => $aLista(Dia::cases()),
+            'ciclo_escolar' => CicloEscolar::vigente()->first(['id', 'nombre', 'periodo']),
         ]);
     }
 }

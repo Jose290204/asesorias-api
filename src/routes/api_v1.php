@@ -38,7 +38,7 @@ Route::post('/auth/recuperar', [RecuperacionController::class, 'restablecer'])
 
 // Compartido: cualquier usuario autenticado y activo
 
-Route::middleware(['auth:sanctum', 'activo'])->group(function () {
+Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::get('/catalogos', [CatalogoController::class, 'catalogos']);
     Route::get('/materias', [MateriaController::class, 'index']);
@@ -57,7 +57,7 @@ Route::middleware(['auth:sanctum', 'activo'])->group(function () {
 // Estudiante. Prefijo /estudiante.
 
 Route::prefix('estudiante')
-    ->middleware(['auth:sanctum', 'activo', 'rol:estudiante'])
+    ->middleware(['auth:sanctum', 'activo', 'facultad', 'rol:estudiante'])
     ->group(function () {
         Route::get('/perfil', [PerfilController::class, 'estudiante']);
         Route::get('/materias', [MateriaController::class, 'paraEstudiante']);
@@ -73,7 +73,7 @@ Route::prefix('estudiante')
 // Asesor. Prefijo /asesor.
 
 Route::prefix('asesor')
-    ->middleware(['auth:sanctum', 'activo', 'rol:asesor'])
+    ->middleware(['auth:sanctum', 'activo', 'facultad', 'rol:asesor'])
     ->group(function () {
         Route::get('/perfil', [PerfilController::class, 'asesor']);
         Route::get('/disponibilidad', [DisponibilidadController::class, 'mostrar']);

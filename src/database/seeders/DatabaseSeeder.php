@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             DisponibilidadSeeder::class,  // al final: necesita al asesor que crea UsuarioSeeder
             AsesoresDemoSeeder::class,
             AdminSeeder::class,
+            SuperAdminSeeder::class,
         ]);
     }
 }

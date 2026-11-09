@@ -43,6 +43,11 @@ class AuthService
             throw new ErrorDeNegocio('Tu cuenta no esta activa', 403, 'cuenta_inactiva');
         }
 
+        //la facultad desactivada bloquea el login (el super admin queda exento)
+        if(! $usuario->esSuperAdmin() && ! $usuario->facultad?->activa){
+            throw new ErrorDeNegocio('Tu facultad está desactivada', 403, 'facultad_inactiva');
+        }
+
         //solo se llega aqui si existe, el correo existe, la contraseña es correcta y esta activa la cuenta
        return $usuario;
     }

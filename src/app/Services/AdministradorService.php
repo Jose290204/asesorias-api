@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\AccionBitacora;
 use App\Enums\EstatusUsuario;
 use App\Enums\Rol;
 use App\Models\Bitacora;
@@ -50,7 +51,7 @@ class AdministradorService
 
             $admin->asignarRol(Rol::Admin);
 
-            Bitacora::registrar('administrador.creado', $admin, [
+            Bitacora::registrar(AccionBitacora::AdministradorCreado, $admin, [
                 'etiqueta' => $this->nombreCompleto($admin),
                 'detalle' => "Se creó al administrador {$admin->correo}.",
             ], $admin->facultad_id);
@@ -91,7 +92,7 @@ class AdministradorService
                 $detalle .= ' Se cambió su contraseña.';
             }
 
-            Bitacora::registrar($movido ? 'administrador.movido' : 'administrador.editado', $admin, [
+            Bitacora::registrar($movido ? AccionBitacora::AdministradorMovido : AccionBitacora::AdministradorEditado, $admin, [
                 'etiqueta' => $this->nombreCompleto($admin),
                 'detalle' => $detalle,
             ], $admin->facultad_id);
@@ -116,7 +117,7 @@ class AdministradorService
                 $this->sesiones->cerrar([$admin->id]);
             }
 
-            Bitacora::registrar($activo ? 'administrador.activado' : 'administrador.desactivado', $admin, [
+            Bitacora::registrar($activo ? AccionBitacora::AdministradorActivado : AccionBitacora::AdministradorDesactivado, $admin, [
                 'etiqueta' => $this->nombreCompleto($admin),
                 'detalle' => $activo
                     ? "Se activó al administrador {$admin->correo}."
@@ -134,7 +135,7 @@ class AdministradorService
             $this->sesiones->cerrar([$admin->id]);
 
             // Se registra antes de borrar, mientras la entidad aún existe
-            Bitacora::registrar('administrador.eliminado', $admin, [
+            Bitacora::registrar(AccionBitacora::AdministradorEliminado, $admin, [
                 'etiqueta' => $this->nombreCompleto($admin),
                 'detalle' => "Se eliminó al administrador {$admin->correo}.",
             ], $admin->facultad_id);

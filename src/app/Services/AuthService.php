@@ -7,6 +7,10 @@ use App\Exceptions\ErrorDeNegocio;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Enums\AccionBitacora;
+use App\Enums\Rol;
+use App\Models\Bitacora;
+use Illuminate\Support\Str;
 
 class AuthService
 {
@@ -46,6 +50,16 @@ class AuthService
         //la facultad desactivada bloquea el login (el super admin queda exento)
         if(! $usuario->esSuperAdmin() && ! $usuario->facultad?->activa){
             throw new ErrorDeNegocio('Tu facultad está desactivada', 403, 'facultad_inactiva');
+        }
+
+        // Solo se registra el inicio de sesión de quienes administran (admin y super admin)
+        if ($usuario->tieneRol(Rol::Admin) || $usuario->tieneRol(Rol::SuperAdmin)) {
+            Bitacora::registrar(AccionBitacora::SesionInicio, $usuario, [
+                'etiqueta' => 'Sesión',
+                'detalle' => request()->filled('dispositivo')
+                    ? 'Desde la app móvil ('.Str::limit((string) request('dispositivo'), 50).').'
+                    : 'Desde el navegador web.',
+            ], $usuario->facultad_id, $usuario);
         }
 
         //solo se llega aqui si existe, el correo existe, la contraseña es correcta y esta activa la cuenta

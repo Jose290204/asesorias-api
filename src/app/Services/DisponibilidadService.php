@@ -5,6 +5,8 @@ namespace App\Services;
 
 use App\Models\Usuario;
 use Illuminate\Support\Facades\DB;
+use App\Enums\AccionBitacora;
+use App\Models\Bitacora;
 
 class DisponibilidadService
 {
@@ -59,6 +61,14 @@ class DisponibilidadService
                     ->map(fn ($m) => ['facultad_id' => $asesor->facultad_id, 'modalidad' => $m])
                     ->all()
             );
+
+            Bitacora::registrar(AccionBitacora::DisponibilidadActualizada, $asesor, [
+                'etiqueta' => 'Disponibilidad',
+                'detalle' => 'Actualizó su disponibilidad: '
+                    .count($datos['materias']).' materia(s), '
+                    .count($datos['horarios']).' horario(s) y '
+                    .count($datos['modalidades']).' modalidad(es).',
+            ]);
         });
 
         //con la transaccion ya terminada, devuelve el estado nuevo (load vuelve a consultar todo)

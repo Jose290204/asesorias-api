@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
+use App\Enums\AccionBitacora;
+use App\Models\Bitacora;
+use Illuminate\Support\Str;
 
 class MaterialService
 {
@@ -77,6 +80,14 @@ class MaterialService
                 }
 
                 // Relación que el Resource necesita para armar la respuesta
+                $actual->loadMissing('materia');
+
+                Bitacora::registrar(AccionBitacora::MaterialSubido, $actual, [
+                    'etiqueta' => "Asesoría de {$actual->materia->nombre}",
+                    'detalle' => 'Subió '.$creados->count().' archivo(s): '
+                        .Str::limit($creados->pluck('nombre_archivo')->implode(', '), 150),
+                ]);
+
                 return $creados->load('usuario');
             });
         } catch (Throwable $e) {
@@ -101,6 +112,13 @@ class MaterialService
             if ($asesoria->estatus === EstatusAsesoria::Cancelada) {
                 throw ErrorDeNegocio::conflicto('No se puede eliminar material de una asesoría cancelada.', 'asesoria_cancelada');
             }
+
+            $asesoria->loadMissing('materia');
+
+            Bitacora::registrar(AccionBitacora::MaterialEliminado, $asesoria, [
+                'etiqueta' => "Asesoría de {$asesoria->materia->nombre}",
+                'detalle' => "Eliminó el archivo {$material->nombre_archivo}.",
+            ]);
 
             $material->delete();
         });

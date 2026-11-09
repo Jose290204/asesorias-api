@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\MaterialController;
 use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\FacultadController;
 use App\Http\Controllers\Api\V1\AdministradorController;
+use App\Http\Controllers\Api\V1\BitacoraController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -113,4 +114,5 @@ Route::prefix('superadmin')
         Route::put('/administradores/{administrador}', [AdministradorController::class, 'update']);
         Route::patch('/administradores/{administrador}/estado', [AdministradorController::class, 'estado']);
         Route::delete('/administradores/{administrador}', [AdministradorController::class, 'destroy']);
+        Route::get('/bitacora', [BitacoraController::class, 'index']);
     });

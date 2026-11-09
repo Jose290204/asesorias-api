@@ -13,6 +13,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Enums\AccionBitacora;
+use App\Models\Bitacora;
+use Illuminate\Support\Str;
 
 class AsesoriaService
 {
@@ -111,7 +114,15 @@ class AsesoriaService
                 'observaciones' => $datos['observaciones'] ?? null,
             ]);
 
-            return $this->paraRespuesta($asesoria);
+            $respuesta = $this->paraRespuesta($asesoria);
+
+            $this->bitacora(
+                AccionBitacora::AsesoriaCreada,
+                $respuesta,
+                "Creó una asesoría para {$respuesta->estudiante->nombreCompleto()} con inicio el {$respuesta->fecha_inicio->format('d/m/Y')}."
+            );
+
+            return $respuesta;
         });
     }
 
@@ -155,7 +166,17 @@ class AsesoriaService
 
             $actual->update($cambios);
 
-            return $this->paraRespuesta($actual);
+            $respuesta = $this->paraRespuesta($actual);
+
+            $campos = collect($actual->getChanges())->keys()
+                ->map(fn ($c) => self::CAMPOS_EDITABLES[$c] ?? null)
+                ->filter()->unique()->implode(', ');
+
+            if ($campos !== '') {
+                $this->bitacora(AccionBitacora::AsesoriaEditada, $respuesta, "Editó la asesoría de {$respuesta->estudiante->nombreCompleto()}: cambió {$campos}.");
+            }
+
+            return $respuesta;
         });
     }
 
@@ -181,7 +202,11 @@ class AsesoriaService
                 'finalizada_en' => now(),
             ]);
 
-            return $this->paraRespuesta($actual);
+            $respuesta = $this->paraRespuesta($actual);
+
+            $this->bitacora(AccionBitacora::AsesoriaCompletada, $respuesta, "Completó la asesoría de {$respuesta->estudiante->nombreCompleto()}.");
+
+            return $respuesta;
         });
     }
 
@@ -199,7 +224,15 @@ class AsesoriaService
                 'motivo_cancelacion' => $motivo,
             ]);
 
-            return $this->paraRespuesta($actual);
+            $respuesta = $this->paraRespuesta($actual);
+
+            $this->bitacora(
+                AccionBitacora::AsesoriaCancelada,
+                $respuesta,
+                "Canceló la asesoría de {$respuesta->estudiante->nombreCompleto()}. Motivo: ".Str::limit($motivo, 120)
+            );
+
+            return $respuesta;
         });
     }
 
@@ -301,5 +334,22 @@ class AsesoriaService
     private function paraRespuesta(Asesoria $asesoria): Asesoria
     {
         return $asesoria->load(['estudiante', 'materia', 'horario'])->loadCount('sesiones');
+    }
+
+    private const CAMPOS_EDITABLES = [
+        'fecha_inicio' => 'fecha de inicio',
+        'horario_id' => 'horario',
+        'modalidad' => 'modalidad',
+        'razon' => 'razón',
+        'observaciones' => 'observaciones',
+    ];
+
+    // La asesoría debe traer cargada la materia (paraRespuesta la carga)
+    private function bitacora(AccionBitacora $accion, Asesoria $asesoria, string $detalle): void
+    {
+        Bitacora::registrar($accion, $asesoria, [
+            'etiqueta' => "Asesoría de {$asesoria->materia->nombre}",
+            'detalle' => $detalle,
+        ]);
     }
 }

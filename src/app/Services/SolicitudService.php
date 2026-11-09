@@ -13,6 +13,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Enums\EstatusAsesoria;
 use App\Models\Asesoria;
+use App\Enums\AccionBitacora;
+use App\Models\Bitacora;
+use Illuminate\Support\Str;
 
 class SolicitudService
 {
@@ -65,8 +68,15 @@ class SolicitudService
             'nota_estudiante' => $datos['nota'] ?? null,
         ]);
 
-        // El Resource necesita estas relaciones cargadas para armar la respuesta
-        return $solicitud->load(['asesor', 'materia', 'horario']);
+       $solicitud->load(['asesor', 'materia', 'horario']);
+
+        $this->bitacora(
+            AccionBitacora::SolicitudCreada,
+            $solicitud,
+            "Solicitó asesoría con {$solicitud->asesor->nombreCompleto()} para el {$solicitud->fecha_inicio->format('d/m/Y')}."
+        );
+
+        return $solicitud;
     }
 
         // Lista las solicitudes del usuario según el rol con el que consulta.
@@ -152,8 +162,11 @@ class SolicitudService
             'respondida_en' => now(),
         ]);
 
-        // Carga las relaciones que el Resource va a usar y devuelve la solicitud
-        return $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
+        $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
+
+        $this->bitacora(AccionBitacora::SolicitudCancelada, $actual, 'Canceló su solicitud.');
+
+        return $actual;
     });
     }
 
@@ -176,7 +189,15 @@ class SolicitudService
                 'respondida_en' => now(),
             ]);
 
-            return $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
+              $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
+
+            $this->bitacora(
+                AccionBitacora::SolicitudRechazada,
+                $actual,
+                "Rechazó la solicitud de {$actual->estudiante->nombreCompleto()}. Motivo: ".Str::limit($motivo, 120)
+            );
+
+            return $actual;
         });
     }
 
@@ -252,7 +273,23 @@ class SolicitudService
                 ]);
             }
 
-            return $actual->load(['estudiante', 'asesor', 'materia', 'horario', 'asesoria']);
+            $actual->load(['estudiante', 'asesor', 'materia', 'horario', 'asesoria']);
+
+            $this->bitacora(
+                AccionBitacora::SolicitudAceptada,
+                $actual,
+                "Aceptó la solicitud de {$actual->estudiante->nombreCompleto()} y se creó la asesoría."
+            );
+
+            if ($competidoras->isNotEmpty()) {
+                $this->bitacora(
+                    AccionBitacora::SolicitudRechazadaAuto,
+                    $actual,
+                    "El sistema rechazó {$competidoras->count()} solicitud(es) más porque el horario quedó ocupado."
+                );
+            }
+
+            return $actual;
         });
     }
 
@@ -321,7 +358,36 @@ class SolicitudService
 
             $actual->update($cambios);
 
-            return $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
+            $actual->load(['estudiante', 'asesor', 'materia', 'horario']);
+
+            // Solo se registra si algo cambió de verdad
+            $campos = collect($actual->getChanges())->keys()
+                ->map(fn ($c) => self::CAMPOS_EDITABLES[$c] ?? null)
+                ->filter()->unique()->implode(', ');
+
+            if ($campos !== '') {
+                $this->bitacora(AccionBitacora::SolicitudEditada, $actual, "Editó su solicitud: cambió {$campos}.");
+            }
+
+            return $actual;
         });
+
+        
+    }
+
+        // Campos de editar() que se muestran en la bitácora
+    private const CAMPOS_EDITABLES = [
+        'fecha_inicio' => 'fecha',
+        'horario_id' => 'horario',
+        'nota_estudiante' => 'nota',
+    ];
+
+    // La solicitud debe traer cargada la materia (todos los returns de este servicio la cargan)
+    private function bitacora(AccionBitacora $accion, Solicitud $solicitud, string $detalle): void
+    {
+        Bitacora::registrar($accion, $solicitud, [
+            'etiqueta' => "Solicitud de {$solicitud->materia->nombre}",
+            'detalle' => $detalle,
+        ]);
     }
 }

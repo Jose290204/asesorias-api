@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\AccionBitacora;
 use App\Enums\Rol;
 use App\Models\Bitacora;
 use App\Models\Facultad;
@@ -12,7 +13,6 @@ use Illuminate\Support\Facades\Storage;
 
 class FacultadService
 {
-
     public function __construct(private CierreDeSesiones $sesiones) {}
 
     // Crea la facultad (siempre activa). El logo es opcional.
@@ -26,7 +26,7 @@ class FacultadService
                 'activa' => true,
             ]);
 
-            Bitacora::registrar('facultad.creada', $facultad, [
+            Bitacora::registrar(AccionBitacora::FacultadCreada, $facultad, [
                 'etiqueta' => $facultad->nombre,
                 'detalle' => "Se creó la facultad {$facultad->siglas}.",
             ], $facultad->id);
@@ -58,7 +58,7 @@ class FacultadService
                 Storage::disk('public')->delete($anterior);
             }
 
-            Bitacora::registrar('facultad.editada', $facultad, [
+            Bitacora::registrar(AccionBitacora::FacultadEditada, $facultad, [
                 'etiqueta' => $facultad->nombre,
                 'detalle' => "Se editó la facultad {$facultad->siglas}.",
             ], $facultad->id);
@@ -81,7 +81,7 @@ class FacultadService
                 $this->cerrarSesiones($facultad);
             }
 
-            Bitacora::registrar($activa ? 'facultad.activada' : 'facultad.desactivada', $facultad, [
+            Bitacora::registrar($activa ? AccionBitacora::FacultadActivada : AccionBitacora::FacultadDesactivada, $facultad, [
                 'etiqueta' => $facultad->nombre,
                 'detalle' => $activa
                     ? "Se activó la facultad {$facultad->siglas}."
@@ -92,7 +92,7 @@ class FacultadService
         });
     }
 
-        // Revoca tokens y sesiones de los usuarios de la facultad (menos el super admin)
+    // Revoca tokens y sesiones de los usuarios de la facultad (menos el super admin)
     private function cerrarSesiones(Facultad $facultad): void
     {
         $ids = Usuario::query()

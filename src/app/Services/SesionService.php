@@ -10,6 +10,8 @@ use App\Models\Usuario;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Enums\AccionBitacora;
+use App\Models\Bitacora;
 
 class SesionService
 {
@@ -74,6 +76,13 @@ class SesionService
             ]);
 
             // Relaciones que el Resource necesita para armar la respuesta
+            $actual->loadMissing('materia');
+
+            Bitacora::registrar(AccionBitacora::SesionRegistrada, $actual, [
+                'etiqueta' => "Asesoría de {$actual->materia->nombre}",
+                'detalle' => "Registró una sesión del {$fecha->format('d/m/Y')}".($sesion->tema ? ": {$sesion->tema}." : '.'),
+            ]);
+
             return $sesion->load(['horario', 'registradaPor']);
         });
     }
@@ -90,6 +99,13 @@ class SesionService
             if ($asesoria->estatus !== EstatusAsesoria::EnCurso) {
                 throw ErrorDeNegocio::conflicto('Solo se pueden eliminar sesiones de asesorías en curso.', 'asesoria_no_en_curso');
             }
+
+            $asesoria->loadMissing('materia');
+
+            Bitacora::registrar(AccionBitacora::SesionEliminada, $asesoria, [
+                'etiqueta' => "Asesoría de {$asesoria->materia->nombre}",
+                'detalle' => "Eliminó la sesión del {$sesion->fecha->format('d/m/Y')}.",
+            ]);
 
             $sesion->delete();
         });

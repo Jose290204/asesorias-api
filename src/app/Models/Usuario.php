@@ -105,4 +105,9 @@ class Usuario extends Authenticatable
     {
         return $this->hasMany(DisponibilidadHorario::class, 'asesor_id');
     }
+
+        public function nombreCompleto(): string
+    {
+        return implode(' ', array_filter([$this->nombre, $this->apellido_paterno, $this->apellido_materno]));
+    }
 }

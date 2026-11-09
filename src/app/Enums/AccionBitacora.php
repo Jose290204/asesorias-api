@@ -7,6 +7,7 @@ namespace App\Enums;
 enum AccionBitacora: string
 {
     case SesionInicio = 'sesion.inicio';
+    case ContrasenaRestablecida = 'cuenta.contrasena_restablecida';
 
     case FacultadCreada = 'facultad.creada';
     case FacultadEditada = 'facultad.editada';
@@ -20,11 +21,25 @@ enum AccionBitacora: string
     case AdministradorDesactivado = 'administrador.desactivado';
     case AdministradorEliminado = 'administrador.eliminado';
 
-    // Estas todavía no se registran: se usarán al construir las fases 2.1 en adelante
-    case AsesoriaCreada = 'asesoria.creada';
-    case AsesoriaEliminada = 'asesoria.eliminada';
+    case SolicitudCreada = 'solicitud.creada';
+    case SolicitudEditada = 'solicitud.editada';
+    case SolicitudCancelada = 'solicitud.cancelada';
     case SolicitudAceptada = 'solicitud.aceptada';
     case SolicitudRechazada = 'solicitud.rechazada';
+    case SolicitudRechazadaAuto = 'solicitud.rechazada_auto';
+
+    case AsesoriaCreada = 'asesoria.creada';
+    case AsesoriaEditada = 'asesoria.editada';
+    case AsesoriaCompletada = 'asesoria.completada';
+    case AsesoriaCancelada = 'asesoria.cancelada';
+
+    case SesionRegistrada = 'sesion.registrada';
+    case SesionEliminada = 'sesion.eliminada';
+
+    case MaterialSubido = 'material.subido';
+    case MaterialEliminado = 'material.eliminado';
+
+    case DisponibilidadActualizada = 'disponibilidad.actualizada';
 
     // Para validar filtros: ['sesion.inicio', 'facultad.creada', ...]
     public static function valores(): array

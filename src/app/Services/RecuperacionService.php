@@ -9,6 +9,8 @@ use App\Mail\CodigoRecuperacionMail;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use App\Enums\AccionBitacora;
+use App\Models\Bitacora;
 
 class RecuperacionService
 {
@@ -70,6 +72,12 @@ class RecuperacionService
             // Cierra todas las sesiones web y revoca los tokens de la app
             DB::table('sessions')->where('user_id', $usuario->id)->delete();
             $usuario->tokens()->delete();
+
+            // Nadie está autenticado aquí, por eso el actor y la facultad van explícitos
+            Bitacora::registrar(AccionBitacora::ContrasenaRestablecida, $usuario, [
+                'etiqueta' => 'Cuenta',
+                'detalle' => 'Restableció su contraseña con un código de recuperación.',
+            ], $usuario->facultad_id, $usuario);
 
             return true;
         });

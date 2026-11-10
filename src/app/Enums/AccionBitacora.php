@@ -45,6 +45,12 @@ enum AccionBitacora: string
     case EstudianteEditado = 'estudiante.editado';
     case EstudianteDadoDeBaja = 'estudiante.baja';
 
+    case AsesorCreado = 'asesor.creado';
+    case AsesorEditado = 'asesor.editado';
+    case AsesorDadoDeBaja = 'asesor.baja';
+    case AsesorParAsignado = 'asesor_par.asignado';
+    case AsesorParQuitado = 'asesor_par.quitado';
+
     // Para validar filtros: ['sesion.inicio', 'facultad.creada', ...]
     public static function valores(): array
     {

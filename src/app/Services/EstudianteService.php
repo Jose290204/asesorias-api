@@ -96,7 +96,7 @@ class EstudianteService
             );
 
         // El correo solo se busca desde el panel del admin: al asesor no se le muestra
-        return $this->listar($consulta, $filtros['buscar'] ?? null, true);
+        return $this->listar($consulta, $filtros['buscar'] ?? null, true, true);
     }
 
     // El admin da de alta a un estudiante: nace ACTIVO, con la contraseña que el admin le pone
@@ -220,7 +220,7 @@ class EstudianteService
         });
     }
 
-    private function listar(Builder $consulta, ?string $buscar, bool $porCorreo = false): LengthAwarePaginator
+     private function listar(Builder $consulta, ?string $buscar, bool $porCorreo = false, bool $porId = false): LengthAwarePaginator
     {
         return $consulta
             // El Resource muestra el nombre del grupo: se carga de golpe (evita N+1)
@@ -237,11 +237,17 @@ class EstudianteService
                     }
                 });
             })
-            ->orderBy('apellido_paterno')
-            ->orderBy('apellido_materno')
-            ->orderBy('nombre')
-            // El id desempata: la paginación no repite ni salta alumnos con el mismo nombre
-            ->orderBy('id')
+             // La tabla del admin va por id (1, 2, 3...); el autocompletado del asesor, alfabético
+            ->when(
+                $porId,
+                fn (Builder $q) => $q->orderBy('id'),
+                fn (Builder $q) => $q
+                    ->orderBy('apellido_paterno')
+                    ->orderBy('apellido_materno')
+                    ->orderBy('nombre')
+                    // El id desempata: la paginación no repite ni salta alumnos con el mismo nombre
+                    ->orderBy('id')
+            )
             ->paginate(10);
     }
 }

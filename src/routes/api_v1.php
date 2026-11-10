@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\FacultadController;
 use App\Http\Controllers\Api\V1\AdministradorController;
 use App\Http\Controllers\Api\V1\BitacoraController;
 use App\Http\Controllers\Api\V1\Admin\AdminPerfilController;
+use App\Http\Controllers\Api\V1\AsesorAdminController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -83,9 +84,20 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
             Route::get('/solicitudes', [SolicitudController::class, 'indexAdmin']);
             Route::post('/solicitudes/{solicitud}/aceptar', [SolicitudController::class, 'aceptar']);
             Route::post('/solicitudes/{solicitud}/rechazar', [SolicitudController::class, 'rechazar']);
-          Route::post('/estudiantes', [EstudianteController::class, 'crear']);
-Route::put('/estudiantes/{estudiante}', [EstudianteController::class, 'actualizar'])->whereNumber('estudiante');
-Route::delete('/estudiantes/{estudiante}', [EstudianteController::class, 'eliminar'])->whereNumber('estudiante');
+            Route::post('/estudiantes', [EstudianteController::class, 'crear']);
+            Route::put('/estudiantes/{estudiante}', [EstudianteController::class, 'actualizar'])->whereNumber('estudiante');
+            Route::delete('/estudiantes/{estudiante}', [EstudianteController::class, 'eliminar'])->whereNumber('estudiante');
+            Route::get('/asesores-disciplinares', [AsesorAdminController::class, 'indexDisciplinares']);
+            Route::post('/asesores-disciplinares', [AsesorAdminController::class, 'crear']);
+            Route::put('/asesores-disciplinares/{asesor}', [AsesorAdminController::class, 'actualizar'])->whereNumber('asesor');
+            Route::delete('/asesores-disciplinares/{asesor}', [AsesorAdminController::class, 'eliminar'])->whereNumber('asesor');
+
+            Route::get('/asesores-par', [AsesorAdminController::class, 'indexPares']);
+            Route::get('/asesores-par/candidatos', [AsesorAdminController::class, 'candidatosPar']);
+            Route::post('/asesores-par', [AsesorAdminController::class, 'asignarPar']);
+            Route::delete('/asesores-par/{usuario}', [AsesorAdminController::class, 'quitarPar'])->whereNumber('usuario');
+
+            Route::put('/asesores/{asesor}/disponibilidad', [AsesorAdminController::class, 'actualizarDisponibilidad'])->whereNumber('asesor');
         });
 
 

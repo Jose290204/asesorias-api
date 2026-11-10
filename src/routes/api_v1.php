@@ -98,6 +98,7 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
             Route::delete('/asesores-par/{usuario}', [AsesorAdminController::class, 'quitarPar'])->whereNumber('usuario');
 
             Route::put('/asesores/{asesor}/disponibilidad', [AsesorAdminController::class, 'actualizarDisponibilidad'])->whereNumber('asesor');
+            Route::get('/bitacora', [BitacoraController::class, 'indexFacultad']);
         });
 
 

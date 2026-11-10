@@ -16,4 +16,11 @@ class BitacoraController extends Controller
     {
         return BitacoraResource::collection($bitacora->listar($request->validated()));
     }
+
+    // GET /admin/bitacora?accion=&buscar=&desde=&hasta=&per_page=&page=
+    // Solo los registros de la facultad activa del administrador.
+    public function indexFacultad(ListarBitacoraRequest $request, BitacoraService $bitacora): AnonymousResourceCollection
+    {
+        return BitacoraResource::collection($bitacora->listarDeFacultad($request->validated()));
+    }
 }

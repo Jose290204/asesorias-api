@@ -18,6 +18,8 @@ use App\Http\Controllers\Api\V1\AdministradorController;
 use App\Http\Controllers\Api\V1\BitacoraController;
 use App\Http\Controllers\Api\V1\Admin\AdminPerfilController;
 use App\Http\Controllers\Api\V1\AsesorAdminController;
+use App\Http\Controllers\Api\V1\ReporteController;
+use App\Services\ReporteService;
 use Illuminate\Support\Facades\Route;
 
 
@@ -99,6 +101,11 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
 
             Route::put('/asesores/{asesor}/disponibilidad', [AsesorAdminController::class, 'actualizarDisponibilidad'])->whereNumber('asesor');
             Route::get('/bitacora', [BitacoraController::class, 'indexFacultad']);
+                        Route::get('/ciclos', [ReporteController::class, 'ciclos']);
+            Route::get('/reportes/{tipo}', [ReporteController::class, 'resumen'])
+                ->whereIn('tipo', ReporteService::TIPOS);
+            Route::get('/reportes/{tipo}/{id}/asesorias', [ReporteController::class, 'asesorias'])
+                ->whereIn('tipo', ReporteService::TIPOS)->whereNumber('id');
         });
 
 

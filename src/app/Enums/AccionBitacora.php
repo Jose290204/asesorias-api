@@ -51,6 +51,8 @@ enum AccionBitacora: string
     case AsesorParAsignado = 'asesor_par.asignado';
     case AsesorParQuitado = 'asesor_par.quitado';
 
+    case ConexionCerrada = 'conexion.cerrada';
+
     // Para validar filtros: ['sesion.inicio', 'facultad.creada', ...]
     public static function valores(): array
     {

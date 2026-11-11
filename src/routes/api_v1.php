@@ -21,7 +21,7 @@ use App\Http\Controllers\Api\V1\AsesorAdminController;
 use App\Http\Controllers\Api\V1\ReporteController;
 use App\Services\ReporteService;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Api\V1\ConexionController;
 
 // Público y autenticación
 
@@ -106,6 +106,9 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
                 ->whereIn('tipo', ReporteService::TIPOS);
             Route::get('/reportes/{tipo}/{id}/asesorias', [ReporteController::class, 'asesorias'])
                 ->whereIn('tipo', ReporteService::TIPOS)->whereNumber('id');
+            Route::get('/conexiones', [ConexionController::class, 'index']);
+            Route::delete('/conexiones/{id}', [ConexionController::class, 'destroy'])
+                ->where('id', '^(web|app)-[A-Za-z0-9]+$');
         });
 
 

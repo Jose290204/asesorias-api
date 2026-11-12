@@ -1,6 +1,6 @@
 # 🎓 Asesorías FIC · API
 
-**El motor detrás del sistema de asesorías y tutorías de la Facultad de Informática Culiacán (UAS).**
+**El motor detrás del sistema de asesorías de la Facultad de Informática Culiacán (UAS).**
 
 Este repositorio es la parte que trabaja en silencio para que Asesorías FIC funcione: cuida la información, mantiene todo en orden y asegura que cada persona tenga acceso solo a lo que le corresponde.
 

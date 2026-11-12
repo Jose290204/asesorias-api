@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 /** @mixin \App\Models\Asesoria */
 class AsesoriaResource extends JsonResource
@@ -48,6 +49,13 @@ class AsesoriaResource extends JsonResource
             'sesiones_count' => $this->whenCounted('sesiones'),
             // Mensajes del chat sin leer para quien consulta; 0 si el service no los contó
             'mensajes_sin_leer' => (int) ($this->mensajes_sin_leer_count ?? 0),
+            // Último mensaje del chat; solo sale si el service cargó la relación (null si aún no hay)
+            'ultimo_mensaje' => $this->whenLoaded('ultimoMensaje', fn () => [
+                'texto' => Str::limit($this->ultimoMensaje->mensaje, 120),
+                'fecha' => $this->ultimoMensaje->created_at->toIso8601String(),
+                // true si lo escribió quien consulta (para mostrar las palomitas)
+                'propio' => $this->ultimoMensaje->usuario_id === $request->user()->id,
+            ]),
         ];
     }
 }

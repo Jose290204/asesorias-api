@@ -31,6 +31,7 @@ class AsesoriaController extends Controller
             $request->route('como'),
             $request->input('estatus'),
             $request->input('buscar'),
+            $request->input('orden'),
         );
 
         return AsesoriaResource::collection($asesorias);

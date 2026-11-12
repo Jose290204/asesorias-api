@@ -9,6 +9,7 @@ use App\Enums\RazonAsesoria;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Asesoria extends Model
 {
@@ -72,9 +73,15 @@ class Asesoria extends Model
         return $this->hasMany(Sesion::class);
     }
 
-    public function chats(): HasMany
+       public function chats(): HasMany
     {
         return $this->hasMany(Chat::class);
+    }
+
+    // Solo el mensaje más reciente de la conversación (lo usa la lista de chats)
+    public function ultimoMensaje(): HasOne
+    {
+        return $this->hasOne(Chat::class)->latestOfMany();
     }
 
     public function material(): HasMany

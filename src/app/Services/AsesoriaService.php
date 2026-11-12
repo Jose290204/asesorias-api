@@ -15,7 +15,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Enums\AccionBitacora;
 use App\Models\Bitacora;
+use App\Models\Chat;
 use Illuminate\Support\Str;
+use App\Enums\TipoNotificacion;   // NUEVO
+use App\Support\Avisos;           // NUEVO
 
 class AsesoriaService
 {
@@ -24,7 +27,7 @@ class AsesoriaService
     }
 
     // $como = 'estudiante' | 'asesor': decide de qué lado se filtra la lista
-    public function listar(Usuario $usuario, string $como, ?string $estatus = null, ?string $buscar = null): LengthAwarePaginator
+       public function listar(Usuario $usuario, string $como, ?string $estatus = null, ?string $buscar = null, ?string $orden = null): LengthAwarePaginator
     {
         // Estudiante: las que él tomó. Asesor: las que él imparte.
         $columna = $como === 'asesor' ? 'asesor_id' : 'estudiante_id';
@@ -34,7 +37,7 @@ class AsesoriaService
         return Asesoria::query()
             ->where($columna, $usuario->id)
             // Relaciones del Resource cargadas de golpe (evita N+1)
-            ->with(['materia', 'horario', $otro])
+            ->with(['materia', 'horario', $otro, 'ultimoMensaje'])
             // Agrega sesiones_count sin cargar las sesiones
             ->withCount([
                 'sesiones',
@@ -62,6 +65,11 @@ class AsesoriaService
                       ));
                 });
             })
+            // Más recientes primero; el id desempata
+                        // Lista de chats: primero la conversación con el mensaje más reciente (sin mensajes, al final)
+            ->when($orden === 'mensaje', fn ($q) => $q->orderByDesc(
+                Chat::select('created_at')->whereColumn('asesoria_id', 'asesorias.id')->latest('id')->limit(1)
+            ))
             // Más recientes primero; el id desempata
             ->orderByDesc('fecha_inicio')
             ->orderByDesc('id')
@@ -171,6 +179,9 @@ class AsesoriaService
                 "Creó una asesoría para {$respuesta->estudiante->nombreCompleto()} con inicio el {$respuesta->fecha_inicio->format('d/m/Y')}."
             );
 
+            // NUEVO: aviso al estudiante
+            Avisos::asesoria($respuesta, TipoNotificacion::AsesoriaCreada);
+
             return $respuesta;
         });
     }
@@ -223,6 +234,9 @@ class AsesoriaService
 
             if ($campos !== '') {
                 $this->bitacora(AccionBitacora::AsesoriaEditada, $respuesta, "Editó la asesoría de {$respuesta->estudiante->nombreCompleto()}: cambió {$campos}.");
+
+                // NUEVO: aviso al estudiante con lo que cambió
+                Avisos::asesoria($respuesta, TipoNotificacion::AsesoriaEditada, $campos);
             }
 
             return $respuesta;
@@ -280,6 +294,9 @@ class AsesoriaService
                 $respuesta,
                 "Canceló la asesoría de {$respuesta->estudiante->nombreCompleto()}. Motivo: ".Str::limit($motivo, 120)
             );
+
+            // NUEVO: aviso al estudiante con el motivo
+            Avisos::asesoria($respuesta, TipoNotificacion::AsesoriaCancelada, $motivo);
 
             return $respuesta;
         });

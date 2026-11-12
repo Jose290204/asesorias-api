@@ -16,6 +16,8 @@ use App\Models\Asesoria;
 use App\Enums\AccionBitacora;
 use App\Models\Bitacora;
 use Illuminate\Support\Str;
+use App\Enums\TipoNotificacion;                       // NUEVO
+use App\Notifications\SolicitudNotificacion;          // NUEVO
 
 class SolicitudService
 {
@@ -75,6 +77,9 @@ class SolicitudService
             $solicitud,
             "Solicitó asesoría con {$solicitud->asesor->nombreCompleto()} para el {$solicitud->fecha_inicio->format('d/m/Y')}."
         );
+
+        // NUEVO: aviso al asesor
+        $this->notificar($asesor, TipoNotificacion::SolicitudNueva, $solicitud, $estudiante->nombreCompleto());
 
         return $solicitud;
     }
@@ -190,6 +195,9 @@ class SolicitudService
 
             $this->bitacora(AccionBitacora::SolicitudCancelada, $actual, 'Canceló su solicitud.');
 
+            // NUEVO: aviso al asesor
+            $this->notificar($actual->asesor, TipoNotificacion::SolicitudCancelada, $actual, $actual->estudiante->nombreCompleto());
+
             return $actual;
         });
     }
@@ -220,6 +228,10 @@ class SolicitudService
                 $actual,
                 "Rechazó la solicitud de {$actual->estudiante->nombreCompleto()}. Motivo: ".Str::limit($motivo, 120)
             );
+
+            // NUEVO: aviso al estudiante (el nombre es el del asesor dueño de la solicitud,
+            // también cuando el admin rechaza en su lugar)
+            $this->notificar($actual->estudiante, TipoNotificacion::SolicitudRechazada, $actual, $actual->asesor->nombreCompleto(), $motivo);
 
             return $actual;
         });
@@ -297,6 +309,13 @@ class SolicitudService
                     'motivo_rechazo' => self::MOTIVO_CUPO_TOMADO,
                     'respondida_en' => now(),
                 ]);
+
+                // NUEVO: cada estudiante cuya solicitud se rechazó sola recibe su aviso.
+                // El update de arriba no deja modelos en memoria, por eso se vuelven a leer.
+                Solicitud::whereIn('id', $competidoras)
+                    ->with(['estudiante', 'materia'])
+                    ->get()
+                    ->each(fn ($s) => $this->notificar($s->estudiante, TipoNotificacion::SolicitudRechazadaPorCupo, $s));
             }
 
             $actual->load(['estudiante', 'asesor', 'materia', 'horario', 'asesoria']);
@@ -314,6 +333,9 @@ class SolicitudService
                     "El sistema rechazó {$competidoras->count()} solicitud(es) más porque el horario quedó ocupado."
                 );
             }
+
+            // NUEVO: aviso al estudiante cuya solicitud se aceptó
+            $this->notificar($actual->estudiante, TipoNotificacion::SolicitudAceptada, $actual, $actual->asesor->nombreCompleto());
 
             return $actual;
         });
@@ -393,6 +415,10 @@ class SolicitudService
 
             if ($campos !== '') {
                 $this->bitacora(AccionBitacora::SolicitudEditada, $actual, "Editó su solicitud: cambió {$campos}.");
+
+                // NUEVO: aviso al asesor. $campos va en el parámetro "motivo":
+                // el aviso lo muestra como "cambió fecha, horario"
+                $this->notificar($actual->asesor, TipoNotificacion::SolicitudEditada, $actual, $estudiante->nombreCompleto(), $campos);
             }
 
             return $actual;
@@ -413,5 +439,22 @@ class SolicitudService
             'etiqueta' => "Solicitud de {$solicitud->materia->nombre}",
             'detalle' => $detalle,
         ]);
+    }
+
+    // NUEVO. La solicitud debe traer cargada la materia.
+    // DB::afterCommit: si hay una transacción abierta, el aviso espera al commit (nunca se avisa
+    // de algo que se revirtió); si no la hay, se manda de inmediato. notify() lo encola.
+    private function notificar(Usuario $destino, TipoNotificacion $tipo, Solicitud $solicitud, string $persona = '', ?string $motivo = null): void
+    {
+        $aviso = new SolicitudNotificacion(
+            $tipo,
+            $solicitud->id,
+            $solicitud->materia->nombre,
+            $persona,
+            $solicitud->fecha_inicio->format('d/m/Y'),
+            $motivo,
+        );
+
+        DB::afterCommit(fn () => $destino->notify($aviso));
     }
 }

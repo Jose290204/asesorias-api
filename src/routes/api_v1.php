@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\V1\BitacoraController;
 use App\Http\Controllers\Api\V1\Admin\AdminPerfilController;
 use App\Http\Controllers\Api\V1\AsesorAdminController;
 use App\Http\Controllers\Api\V1\ReporteController;
+use App\Http\Controllers\Api\V1\NotificacionController;
 use App\Services\ReporteService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\ConexionController;
@@ -58,6 +59,14 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
     Route::post('/asesorias/{asesoria}/mensajes', [ChatController::class, 'enviar'])
         ->middleware('throttle:mensajes');
     Route::post('/asesorias/{asesoria}/mensajes/leidos', [ChatController::class, 'marcarLeidos']);
+
+    
+    // Notificaciones del usuario autenticado
+    Route::get('/notificaciones', [NotificacionController::class, 'index']);
+    Route::post('/notificaciones/leidas', [NotificacionController::class, 'marcarTodas']);
+    Route::post('/notificaciones/{id}/leida', [NotificacionController::class, 'marcarLeida']);
+    Route::delete('/notificaciones', [NotificacionController::class, 'borrarTodas']);
+    Route::delete('/notificaciones/{id}', [NotificacionController::class, 'borrar']);
 });
 
 

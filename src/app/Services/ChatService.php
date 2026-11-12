@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Enums\EstatusAsesoria;
+use App\Enums\TipoNotificacion;
 use App\Exceptions\ErrorDeNegocio;
 use App\Models\Asesoria;
 use App\Models\Chat;
 use App\Models\Usuario;
+use App\Support\Avisos;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -60,6 +62,9 @@ class ChatService
                 'mensaje' => $mensaje,
             ]);
 
+            // NUEVO: aviso en la campanita de la otra persona (uno solo por conversación mientras no lo lea)
+            Avisos::mensaje($actual, $autor, $mensaje);
+
             // El Resource necesita al autor para armar el "emisor"
             return $chat->load('usuario');
         });
@@ -71,13 +76,19 @@ class ChatService
     // por eso no bloquea ni revisa el estatus. Devuelve cuántos mensajes marcó.
     public function marcarLeidos(Asesoria $asesoria, Usuario $lector): int
     {
+        // NUEVO: abrir el chat también apaga su aviso de la campanita
+        $lector->unreadNotifications()
+            ->where('type', TipoNotificacion::MensajeNuevo->value)
+            ->where('data->asesoria_id', $asesoria->id)
+            ->update(['read_at' => now()]);
+
         return $asesoria->chats()
             ->where('usuario_id', '!=', $lector->id)
             ->whereNull('leido_en')
             ->update(['leido_en' => now()]);
     }
 
-     public function leidosHasta(Asesoria $asesoria, Usuario $autor): int
+    public function leidosHasta(Asesoria $asesoria, Usuario $autor): int
     {
         return (int) $asesoria->chats()
             ->where('usuario_id', $autor->id)

@@ -24,6 +24,7 @@ class ListarAsesoriasRequest extends FormRequest
             ],
             // Texto libre para buscar por materia o por la otra persona de la asesoría
             'buscar' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'orden' => ['sometimes', 'in:mensaje'],
         ];
     }
 
@@ -32,6 +33,7 @@ class ListarAsesoriasRequest extends FormRequest
     {
         return [
             'estatus.in' => 'El estatus no es válido.',
+            'orden.in' => 'El orden no es válido.',
         ];
     }
 }

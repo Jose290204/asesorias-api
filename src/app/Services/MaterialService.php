@@ -16,6 +16,8 @@ use Throwable;
 use App\Enums\AccionBitacora;
 use App\Models\Bitacora;
 use Illuminate\Support\Str;
+use App\Enums\TipoNotificacion;   // NUEVO
+use App\Support\Avisos;           // NUEVO
 
 class MaterialService
 {
@@ -87,6 +89,9 @@ class MaterialService
                     'detalle' => 'Subió '.$creados->count().' archivo(s): '
                         .Str::limit($creados->pluck('nombre_archivo')->implode(', '), 150),
                 ]);
+
+                // NUEVO: aviso al estudiante
+                Avisos::asesoria($actual, TipoNotificacion::MaterialSubido, $creados->count().' archivo(s)');
 
                 return $creados->load('usuario');
             });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AsignarAsesorParRequest;
+use App\Http\Requests\CargarAsesoresRequest;
 use App\Http\Requests\GuardarAsesorRequest;
 use App\Http\Requests\GuardarDisponibilidadRequest;
 use App\Http\Requests\ListarAsesoresAdminRequest;
@@ -11,6 +12,7 @@ use App\Http\Resources\AsesorAdminResource;
 use App\Http\Resources\DisponibilidadResource;
 use App\Http\Resources\EstudianteAdminResource;
 use App\Services\AsesorAdminService;
+use App\Services\AsesorCargaService;
 use App\Services\AsesorService;
 use App\Services\DisponibilidadService;
 use Illuminate\Http\Request;
@@ -52,6 +54,14 @@ class AsesorAdminController extends Controller
         $this->asesores->darDeBaja($this->asesores->encontrarDisciplinar($asesor));
 
         return response()->noContent();
+    }
+
+    // POST /admin/asesores-disciplinares/carga: confirmar=false solo valida; confirmar=true crea las filas válidas
+    public function cargarDisciplinares(CargarAsesoresRequest $request, AsesorCargaService $carga): JsonResponse
+    {
+        return response()->json([
+            'data' => $carga->procesar($request->input('filas'), $request->boolean('confirmar')),
+        ]);
     }
 
     // GET /admin/asesores-par?buscar=&materia_id=

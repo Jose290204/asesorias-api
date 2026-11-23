@@ -101,6 +101,7 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
             Route::delete('/estudiantes/{estudiante}', [EstudianteController::class, 'eliminar'])->whereNumber('estudiante');
             Route::get('/asesores-disciplinares', [AsesorAdminController::class, 'indexDisciplinares']);
             Route::post('/asesores-disciplinares', [AsesorAdminController::class, 'crear']);
+            Route::post('/asesores-disciplinares/carga', [AsesorAdminController::class, 'cargarDisciplinares']);
             Route::put('/asesores-disciplinares/{asesor}', [AsesorAdminController::class, 'actualizar'])->whereNumber('asesor');
             Route::delete('/asesores-disciplinares/{asesor}', [AsesorAdminController::class, 'eliminar'])->whereNumber('asesor');
 

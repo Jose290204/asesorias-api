@@ -11,6 +11,9 @@ use App\Http\Resources\EstudianteResource;
 use App\Services\EstudianteService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use App\Http\Requests\CargarEstudiantesRequest;
+use App\Services\EstudianteCargaService;
+use Illuminate\Http\JsonResponse;
 
 class EstudianteController extends Controller
 {
@@ -53,5 +56,13 @@ class EstudianteController extends Controller
         $estudiantes->darDeBaja($estudiantes->encontrarEnFacultad($estudiante));
 
         return response()->noContent();
+    }
+
+        // POST /admin/estudiantes/carga: confirmar=false solo valida; confirmar=true crea las filas válidas
+    public function cargar(CargarEstudiantesRequest $request, EstudianteCargaService $carga): JsonResponse
+    {
+        return response()->json([
+            'data' => $carga->procesar($request->input('filas'), $request->boolean('confirmar')),
+        ]);
     }
 }

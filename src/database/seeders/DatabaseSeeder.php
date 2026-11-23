@@ -8,6 +8,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Solo catálogos. Usuarios (super admins, admins, asesores y estudiantes)
+        // se crean desde el sistema o con el comando "superadmin:crear".
         // El orden importa: cada seeder depende de los anteriores
         $this->call([
             FacultadSeeder::class,        // primero: todo apunta a facultad_id = 1
@@ -16,11 +18,6 @@ class DatabaseSeeder extends Seeder
             CicloEscolarSeeder::class,
             GrupoSeeder::class,           // necesita database/seeders/data/grupos.csv
             MateriaSeeder::class,         // necesita database/seeders/data/materias.csv
-            UsuarioSeeder::class,         // usa los grupo_id de los grupos
-            DisponibilidadSeeder::class,  // al final: necesita al asesor que crea UsuarioSeeder
-            AsesoresDemoSeeder::class,
-            AdminSeeder::class,
-            SuperAdminSeeder::class,
         ]);
     }
 }

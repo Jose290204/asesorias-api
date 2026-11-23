@@ -96,6 +96,7 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
             Route::post('/solicitudes/{solicitud}/aceptar', [SolicitudController::class, 'aceptar']);
             Route::post('/solicitudes/{solicitud}/rechazar', [SolicitudController::class, 'rechazar']);
             Route::post('/estudiantes', [EstudianteController::class, 'crear']);
+            Route::post('/estudiantes/carga', [EstudianteController::class, 'cargar']);
             Route::put('/estudiantes/{estudiante}', [EstudianteController::class, 'actualizar'])->whereNumber('estudiante');
             Route::delete('/estudiantes/{estudiante}', [EstudianteController::class, 'eliminar'])->whereNumber('estudiante');
             Route::get('/asesores-disciplinares', [AsesorAdminController::class, 'indexDisciplinares']);

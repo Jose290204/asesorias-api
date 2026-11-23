@@ -21,6 +21,8 @@ class UsuarioSeeder extends Seeder
             return;
         }
 
+        // Los estudiantes reales entran por la carga masiva (padrón en Excel),
+        // aquí solo quedan los asesores de prueba.
         $usuarios = [
             // Asesor disciplinar: solo asesor, sin grupo ni número de cuenta
             [
@@ -47,45 +49,6 @@ class UsuarioSeeder extends Seeder
                 'promedio' => 9.40,
                 'estatus' => EstatusUsuario::Activo,
                 'roles' => [Rol::Estudiante, Rol::Asesor],
-            ],
-            // Estudiante 1
-            [
-                'correo' => 'estudiante1@fic.test',
-                'nombre' => 'Luis Fernando',
-                'apellido_paterno' => 'Pérez',
-                'apellido_materno' => 'Gámez',
-                'numero_cuenta' => '20230001',
-                'num_cel' => '6671000003',
-                'grupo_id' => 5,                       // 5-1
-                'promedio' => 8.50,
-                'estatus' => EstatusUsuario::Activo,
-                'roles' => [Rol::Estudiante],
-            ],
-            // Estudiante 2: sirve para probar acceso indebido entre estudiantes
-            [
-                'correo' => 'estudiante2@fic.test',
-                'nombre' => 'Ana Sofía',
-                'apellido_paterno' => 'Núñez',
-                'apellido_materno' => 'Castro',
-                'numero_cuenta' => '20230002',
-                'num_cel' => '6671000004',
-                'grupo_id' => 6,                       // 5-2
-                'promedio' => 8.90,
-                'estatus' => EstatusUsuario::Activo,
-                'roles' => [Rol::Estudiante],
-            ],
-            // Pendiente: para probar la activación por código
-            [
-                'correo' => 'pendiente@fic.test',
-                'nombre' => 'Carlos',
-                'apellido_paterno' => 'Mendoza',
-                'apellido_materno' => 'Ibarra',
-                'numero_cuenta' => '20230003',
-                'num_cel' => '6671000005',
-                'grupo_id' => 7,                       // 5-3
-                'promedio' => 8.00,
-                'estatus' => EstatusUsuario::Pendiente,
-                'roles' => [Rol::Estudiante],
             ],
         ];
 

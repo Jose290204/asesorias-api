@@ -24,6 +24,20 @@ class NotificacionController extends Controller
             ->additional(['meta' => ['no_leidas' => $usuario->unreadNotifications()->count()]]);
     }
 
+        // GET /notificaciones/resumen: solo números, para que el front pregunte seguido sin traer la lista.
+    // Si cambia cualquiera de los tres datos, el front trae la lista completa.
+    public function resumen(Request $request): JsonResponse
+    {
+        $usuario = $request->user();
+        $ultima = $usuario->notifications()->first(['id', 'created_at']);
+
+        return response()->json([
+            'no_leidas' => $usuario->unreadNotifications()->count(),
+            'ultima' => $ultima?->id,
+            'ultima_en' => $ultima?->created_at?->toIso8601String(),
+        ]);
+    }
+
     // POST /notificaciones/{id}/leida: 404 si la notificación no es del usuario
     public function marcarLeida(Request $request, string $id): NotificacionResource
     {

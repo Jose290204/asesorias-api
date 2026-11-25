@@ -63,6 +63,7 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
     
     // Notificaciones del usuario autenticado
     Route::get('/notificaciones', [NotificacionController::class, 'index']);
+        Route::get('/notificaciones/resumen', [NotificacionController::class, 'resumen']);
     Route::post('/notificaciones/leidas', [NotificacionController::class, 'marcarTodas']);
     Route::post('/notificaciones/{id}/leida', [NotificacionController::class, 'marcarLeida']);
     Route::delete('/notificaciones', [NotificacionController::class, 'borrarTodas']);

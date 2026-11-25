@@ -28,6 +28,9 @@ class VerificarCodigoRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'correo.required' => 'Escribe tu correo.',
+            'correo.email'    => 'Escribe un correo válido.',
+            'correo.max'      => 'El correo es demasiado largo.',
             'codigo.required' => 'Escribe el código.',
             'codigo.digits'   => 'El código tiene 6 dígitos.',
         ];

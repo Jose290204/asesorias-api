@@ -29,6 +29,7 @@ class SolicitarCodigoRequest extends FormRequest
         return [
             'correo.required' => 'Escribe tu correo.',
             'correo.email'    => 'Escribe un correo válido.',
+            'correo.max'      => 'El correo es demasiado largo.',
         ];
     }
 }

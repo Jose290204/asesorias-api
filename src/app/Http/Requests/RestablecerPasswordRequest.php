@@ -30,7 +30,14 @@ class RestablecerPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'correo.required'    => 'Escribe tu correo.',
+            'correo.email'       => 'Escribe un correo válido.',
+            'correo.max'         => 'El correo es demasiado largo.',
+            'codigo.required'    => 'Escribe el código.',
+            'codigo.digits'      => 'El código tiene 6 dígitos.',
+            'password.required'  => 'Escribe la nueva contraseña.',
             'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.max'       => 'La contraseña es demasiado larga (máximo 72 caracteres).',
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ];
     }

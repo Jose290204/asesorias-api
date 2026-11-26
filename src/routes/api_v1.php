@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminPerfilController;
 use App\Http\Controllers\Api\V1\AsesorAdminController;
 use App\Http\Controllers\Api\V1\ReporteController;
 use App\Http\Controllers\Api\V1\NotificacionController;
+use App\Http\Controllers\Api\V1\EvidenciaController;
 use App\Services\ReporteService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\ConexionController;
@@ -52,6 +53,7 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
     Route::get('/materias', [MateriaController::class, 'index']);
     Route::get('/asesorias/{asesoria}/sesiones', [SesionController::class, 'index']);
     Route::get('/asesorias/{asesoria}/material', [MaterialController::class, 'index']);
+    Route::get('/evidencias/{evidencia}/descargar', [EvidenciaController::class, 'descargar']);
     Route::get('/material/{material}/descargar', [MaterialController::class, 'descargar']);
     
      // Chat de la asesoría: lo usan el estudiante y el asesoria, el policy checa y decide quein puede hacer que
@@ -88,6 +90,8 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
             Route::post('/asesorias/{asesoria}/cancelar', [AsesoriaController::class, 'cancelar']);
             Route::post('/asesorias/{asesoria}/sesiones', [SesionController::class, 'registrar']);
             Route::delete('/sesiones/{sesion}', [SesionController::class, 'eliminar']);
+            Route::post('/sesiones/{sesion}/evidencias', [EvidenciaController::class, 'subir']);
+        Route::delete('/evidencias/{evidencia}', [EvidenciaController::class, 'eliminar']);
             Route::post('/asesorias/{asesoria}/material', [MaterialController::class, 'subir']);
             Route::delete('/material/{material}', [MaterialController::class, 'eliminar']);
             Route::get('/estudiantes', [EstudianteController::class, 'indexAdmin']);
@@ -159,6 +163,8 @@ Route::prefix('asesor')
         Route::get('/estudiantes', [EstudianteController::class, 'index']);
         Route::post('/asesorias/{asesoria}/sesiones', [SesionController::class, 'registrar']);
         Route::delete('/sesiones/{sesion}', [SesionController::class, 'eliminar']);
+        Route::post('/sesiones/{sesion}/evidencias', [EvidenciaController::class, 'subir']);
+        Route::delete('/evidencias/{evidencia}', [EvidenciaController::class, 'eliminar']);
         Route::post('/asesorias/{asesoria}/material', [MaterialController::class, 'subir']);
         Route::delete('/material/{material}', [MaterialController::class, 'eliminar']);
     });

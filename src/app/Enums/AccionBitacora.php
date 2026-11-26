@@ -39,6 +39,8 @@ enum AccionBitacora: string
 
     case MaterialSubido = 'material.subido';
     case MaterialEliminado = 'material.eliminado';
+    case EvidenciaSubida = 'evidencia.subida';
+    case EvidenciaEliminada = 'evidencia.eliminada';
 
     case DisponibilidadActualizada = 'disponibilidad.actualizada';
 

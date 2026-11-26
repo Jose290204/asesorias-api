@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Enums\AccionBitacora;
 use App\Models\Bitacora;
+use Illuminate\Support\Facades\Storage;
 
 class SesionService
 {
@@ -22,7 +23,7 @@ class SesionService
     {
         return $asesoria->sesiones()
             // El Resource muestra el horario y el nombre de quien la registró: se cargan de golpe
-            ->with(['horario', 'registradaPor'])
+            ->with(['horario', 'registradaPor', 'evidencias'])
             ->orderByDesc('fecha')
             // El id desempata: dos sesiones el mismo día (otro horario) salen en orden estable
             ->orderByDesc('id')
@@ -83,19 +84,18 @@ class SesionService
                 'detalle' => "Registró una sesión del {$fecha->format('d/m/Y')}".($sesion->tema ? ": {$sesion->tema}." : '.'),
             ]);
 
-            return $sesion->load(['horario', 'registradaPor']);
+            return $sesion->load(['horario', 'registradaPor', 'evidencias']);
         });
     }
 
-        // El asesor asignado elimina una sesión. Es un borrado real: la sesión no tiene historial propio.
-    public function eliminar(Sesion $sesion): void
+         public function eliminar(Sesion $sesion): void
     {
+        // Se anotan los archivos antes de borrar: después ya no se podrían consultar
+        $archivos = $sesion->evidencias()->get(['ruta', 'disco']);
+
         DB::transaction(function () use ($sesion) {
-            // Se bloquea la asesoría, igual que en registrar(): si en el mismo instante se está
-            // completando o cancelando, este método espera su turno y ve el estatus ya cambiado.
             $asesoria = Asesoria::whereKey($sesion->asesoria_id)->lockForUpdate()->firstOrFail();
 
-            // Una asesoría cerrada conserva su historial de sesiones tal como quedó
             if ($asesoria->estatus !== EstatusAsesoria::EnCurso) {
                 throw ErrorDeNegocio::conflicto('Solo se pueden eliminar sesiones de asesorías en curso.', 'asesoria_no_en_curso');
             }
@@ -109,5 +109,10 @@ class SesionService
 
             $sesion->delete();
         });
+
+        // Después de confirmar el borrado, se limpian los archivos de sus evidencias
+        foreach ($archivos as $archivo) {
+            Storage::disk($archivo->disco)->delete($archivo->ruta);
+        }
     }
 }

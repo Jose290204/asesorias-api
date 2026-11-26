@@ -48,4 +48,12 @@ class FacultadController extends Controller
 
         return new FacultadResource($facultad->loadCount(Facultad::conteos()));
     }
+
+        // DELETE /superadmin/facultades/{facultad}: solo si está vacía
+    public function destroy(Facultad $facultad, FacultadService $facultades): \Illuminate\Http\Response
+    {
+        $facultades->eliminar($facultad);
+
+        return response()->noContent();
+    }
 }

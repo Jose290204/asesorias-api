@@ -13,6 +13,7 @@ enum AccionBitacora: string
     case FacultadEditada = 'facultad.editada';
     case FacultadActivada = 'facultad.activada';
     case FacultadDesactivada = 'facultad.desactivada';
+    case FacultadEliminada = 'facultad.eliminada';
 
     case AdministradorCreado = 'administrador.creado';
     case AdministradorEditado = 'administrador.editado';

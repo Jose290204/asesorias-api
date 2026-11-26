@@ -259,6 +259,14 @@ class AsesoriaService
                 throw ErrorDeNegocio::conflicto('Solo se pueden completar asesorías en curso.', 'asesoria_no_en_curso');
             }
 
+                        // Sin sesiones registradas no hay nada que cerrar
+            if (! $actual->sesiones()->exists()) {
+                throw ErrorDeNegocio::conflicto(
+                    'No se puede completar: la asesoría no tiene sesiones registradas.',
+                    'asesoria_sin_sesiones'
+                );
+            }
+
             // No se borra nada: se cambia el estatus y se anota cuándo terminó
             $actual->update([
                 'estatus' => EstatusAsesoria::Completada,

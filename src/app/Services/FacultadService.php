@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\AccionBitacora;
 use App\Enums\Rol;
+use App\Exceptions\ErrorDeNegocio;
 use App\Models\Bitacora;
 use App\Models\Facultad;
 use App\Models\Usuario;
@@ -64,6 +65,29 @@ class FacultadService
             ], $facultad->id);
 
             return $facultad;
+        });
+    }
+
+        // Solo si está vacía: sin usuarios ni asesorías. Borrado lógico.
+    public function eliminar(Facultad $facultad): void
+    {
+        $tieneUsuarios = $facultad->usuarios()->exists();
+        $tieneAsesorias = $facultad->asesorias()->withoutGlobalScopes()->exists();
+
+        if ($tieneUsuarios || $tieneAsesorias) {
+            throw ErrorDeNegocio::conflicto(
+                'No se puede eliminar: la facultad tiene usuarios o asesorías. Desactívala en su lugar.',
+                'facultad_con_datos'
+            );
+        }
+
+        DB::transaction(function () use ($facultad) {
+            Bitacora::registrar(AccionBitacora::FacultadEliminada, $facultad, [
+                'etiqueta' => $facultad->nombre,
+                'detalle' => "Se eliminó la facultad {$facultad->siglas}.",
+            ], $facultad->id);
+
+            $facultad->delete();
         });
     }
 

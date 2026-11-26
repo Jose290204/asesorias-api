@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Facultad extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'facultades';
 
     protected $fillable = ['nombre', 'siglas', 'logo', 'activa'];
@@ -53,6 +56,6 @@ class Facultad extends Model
     // URL pública del logo (null si no tiene)
     public function logoUrl(): ?string
     {
-        return $this->logo ? Storage::disk('public')->url($this->logo) : null;
+        return $this->logo ? '/storage/'.$this->logo : null;
     }
 }

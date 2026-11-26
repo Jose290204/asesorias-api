@@ -176,6 +176,7 @@ Route::prefix('superadmin')
         // Laravel no lee archivos en un PUT real: el front manda POST con _method=PUT
         Route::put('/facultades/{facultad}', [FacultadController::class, 'update']);
         Route::patch('/facultades/{facultad}/estado', [FacultadController::class, 'estado']);
+        Route::delete('/facultades/{facultad}', [FacultadController::class, 'destroy']);
         Route::get('/administradores', [AdministradorController::class, 'index']);
         Route::post('/administradores', [AdministradorController::class, 'store']);
         Route::put('/administradores/{administrador}', [AdministradorController::class, 'update']);

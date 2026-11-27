@@ -9,6 +9,7 @@ use App\Notifications\AsesoriaNotificacion;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use NotificationChannels\WebPush\WebPushChannel;
 
 // Un solo lugar para disparar los avisos de asesorías y chat, igual que Bitacora::registrar(...):
 // en cada servicio queda una línea.
@@ -62,12 +63,15 @@ class Avisos
             (int) ($previo?->data['cuantos'] ?? 0) + 1,
         );
 
-        if ($previo) {
+               if ($previo) {
             $previo->forceFill(['data' => $aviso->toDatabase($destino), 'created_at' => now()])->save();
+
+            $destino->notifyNow($aviso, [WebPushChannel::class]);
 
             return;
         }
 
-        $destino->notifyNow($aviso, ['database']);
+        $destino->notifyNow($aviso, ['database', WebPushChannel::class]);
+    
     }
 }

@@ -64,7 +64,7 @@ class AsesoriaNotificacion extends Notification implements ShouldQueue
             ->title($this->tipo->titulo())
             ->icon('/icons/icon-192.png')
             ->body($this->mensaje())
-            ->tag('asesoria-'.$this->asesoriaId) // avisos de la misma asesoría se reemplazan entre sí
+            ->tag(($this->tipo === TipoNotificacion::MensajeNuevo ? 'chat-' : 'asesoria-').$this->asesoriaId) // avisos de la misma asesoría se reemplazan entre sí
                         ->data([
                 'tipo' => $this->tipo->value,
                 'asesoria_id' => $this->asesoriaId,

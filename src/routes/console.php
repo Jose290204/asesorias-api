@@ -16,3 +16,11 @@ Schedule::call(fn () => DatabaseNotification::whereNotNull('read_at')
     ->delete())
     ->daily()
     ->name('limpiar-notificaciones');
+
+// Recordatorios del día de la sesión (9:30 y 1 hora antes). Corre cada 5 minutos en horario de clases,
+// en la zona horaria de la app (APP_TIMEZONE=America/Mazatlan). Necesita el scheduler encendido.
+Schedule::command('avisos:recordatorios-sesion')
+    ->everyFiveMinutes()
+    ->between('05:00', '22:00')
+    ->withoutOverlapping()
+    ->name('recordatorios-sesion');

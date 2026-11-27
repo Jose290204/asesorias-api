@@ -20,6 +20,8 @@ enum TipoNotificacion: string
     case AsesoriaCancelada = 'asesoria.cancelada';
     case MaterialSubido = 'material.subido';
     case MensajeNuevo = 'chat.mensaje';
+    // Recordatorio del día de una sesión (lo manda el comando avisos:recordatorios-sesion)
+    case SesionRecordatorio = 'sesion.recordatorio';
 
     // Existen pero hoy no se disparan (se decidió no avisar de ellas); se dejan para no romper
     // los match de las notificaciones y por si se quieren activar después.
@@ -40,6 +42,7 @@ enum TipoNotificacion: string
             self::AsesoriaCancelada => 'Asesoría cancelada',
             self::MaterialSubido => 'Material nuevo',
             self::MensajeNuevo => 'Nuevo mensaje',
+            self::SesionRecordatorio => 'Recordatorio de asesoría',
             self::AsesoriaCompletada => 'Asesoría completada',
             self::SesionRegistrada => 'Nueva sesión registrada',
         };

@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Concerns\PerteneceAFacultad;
+use App\Support\ContextoFacultad;
+use App\Enums\AccionBitacora;
 use Throwable;
 
 class Bitacora extends Model
@@ -44,17 +46,28 @@ class Bitacora extends Model
     {
         return static::where('created_at', '<', now()->subYear());
     }
-
-    // Un fallo al registrar nunca debe romper la acción principal
-    public static function registrar(string $accion, ?Model $entidad = null, array $detalles = []): void
-    {
+       // Un fallo al registrar nunca debe romper la acción principal.
+    // $facultadId explícito: para acciones sobre una facultad desde el panel del super admin.
+    // $actor explícito: en el login todavía no hay nadie autenticado, así que Auth::user() sería null.
+    public static function registrar(
+        AccionBitacora|string $accion,
+        ?Model $entidad = null,
+        array $detalles = [],
+        ?int $facultadId = null,
+        ?Usuario $actor = null,
+    ): void {
         try {
-            $usuario = Auth::user();
+            $usuario = $actor ?? Auth::user();
+
+            // Se marca lo que hizo un super admin (desde su panel o dentro de una facultad)
+            if ($usuario?->esSuperAdmin()) {
+                $detalles['super_admin'] = true;
+            }
 
             static::create([
-                'facultad_id'  => $usuario?->facultad_id,
+                'facultad_id'  => $facultadId ?? app(ContextoFacultad::class)->id() ?? $usuario?->facultad_id,
                 'usuario_id'   => $usuario?->id,
-                'accion'       => $accion,
+                'accion'       => $accion instanceof AccionBitacora ? $accion->value : $accion,
                 'entidad_type' => $entidad?->getMorphClass(),
                 'entidad_id'   => $entidad?->getKey(),
                 'detalles'     => $detalles ?: null,

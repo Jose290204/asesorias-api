@@ -10,15 +10,15 @@ return new class extends Migration
     {
         Schema::create('materias', function (Blueprint $table) {
             $table->id();
+            // La facultad se deduce de la licenciatura
             $table->foreignId('licenciatura_id')->constrained('licenciaturas');
-            $table->foreignId('plan_estudio_id')->constrained('plan_estudios');
             // Número de semestre en que se cursa la materia
             $table->unsignedTinyInteger('semestre');
             $table->string('nombre', 150);
             $table->timestamps();
 
-            // Índice para las búsquedas del front (materias de un plan y licenciatura)
-            $table->index(['licenciatura_id', 'plan_estudio_id']);
+            // Una materia no se repite dentro de la misma licenciatura
+            $table->unique(['licenciatura_id', 'nombre']);
         });
     }
 

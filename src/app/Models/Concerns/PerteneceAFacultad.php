@@ -6,6 +6,7 @@ use App\Models\Facultad;
 use App\Models\Scopes\FacultadScope;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
+use App\Support\ContextoFacultad;
 
 
 trait PerteneceAFacultad
@@ -17,11 +18,9 @@ trait PerteneceAFacultad
         static::addGlobalScope(new FacultadScope);
 
         // Se dispara justo antes de insertar un registro nuevo
-        static::creating(function ($modelo) {
-            if (empty($modelo->facultad_id) && Auth::check()) {
-                /** @var \App\Models\Usuario $usuario */
-                $usuario = Auth::user();
-                $modelo->facultad_id = $usuario->facultad_id;
+                static::creating(function ($modelo) {
+            if (empty($modelo->facultad_id)) {
+                $modelo->facultad_id = app(ContextoFacultad::class)->id();
             }
         });
     }

@@ -24,4 +24,16 @@ enum Dia: string
             default => null,
         };
     }
+
+    // El valor guardado no lleva acento ("miercoles"); la etiqueta sí
+    public function etiqueta(): string
+    {
+        return match ($this) {
+            self::Lunes => 'Lunes',
+            self::Martes => 'Martes',
+            self::Miercoles => 'Miércoles',
+            self::Jueves => 'Jueves',
+            self::Viernes => 'Viernes',
+        };
+    }
 }

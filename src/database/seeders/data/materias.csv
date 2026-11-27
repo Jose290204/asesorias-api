@@ -1,178 +1,91 @@
-id_materia,materia,id_semestre,id_licenciatura,id_plan
-1,Algoritmia,1,1,1
-2,Desarrollo Organizacional,1,1,1
-3,Arquitectura de Computadoras,1,1,1
-4,Matemáticas Discretas,1,1,1
-5,Desarrollo de Habilidades Cognitivas,1,1,1
-6,Análisis y Diseño Orientado a Objetos,2,1,1
-7,Tópicos de Manejo Financiero,2,1,1
-8,Sistemas Digitales y Electrónica,2,1,1
-9,Probabilidad y Estadística,2,1,1
-10,Metodología de la Investigación,2,1,1
-11,Lenguajes de Programación,3,1,1
-12,Ingeniería de Software,3,1,1
-13,Fundamentos de Bases de Datos,3,1,1
-14,Álgebra Lineal,3,1,1
-15,Medio Ambiente y Desarrollo Sustentable,3,1,1
-16,Estructura de Datos,4,1,1
-17,Fundamentos de Redes,4,1,1
-18,Análisis y Diseño de Software,4,1,1
-19,Matemáticas Aplicadas,4,1,1
-20,Manejadores y Lenguajes de Consulta de Base de Datos,4,1,1
-21,Principios de Diseño de Interfaz de Usuario,5,1,1
-22,Redes de Computadoras,5,1,1
-23,Desarrollo e Implementación de Sistemas,5,1,1
-24,Geometría Analítica y Graficación,5,1,1
-25,Gestión de Unidades Informáticas,5,1,1
-26,Programación de Servidores,6,1,1
-27,Administración de Redes,6,1,1
-28,Sistemas de Información,6,1,1
-29,Seminario de Creatividad e Innovación,6,1,1
-30,Redacción de Textos en Inglés,6,1,1
-31,Programación de Interfaces Web,7,1,1
-32,Infraestructura Informática,7,1,1
-33,Innovación Tecnológica,7,1,1
-34,Optativa I,7,1,1
-35,Administración de Proyectos de Software,7,1,1
-36,Inteligencia Artificial,8,1,1
-37,Sistemas Operativos,8,1,1
-38,Modelos de Calidad de Software,8,1,1
-39,Cómputo Movil,8,1,1
-40,Manejo Económico,8,1,1
-41,Emprendedores,9,1,1
-42,Sistemas Distribuidos,9,1,1
-43,Taller Integrador de Especialización,9,1,1
-44,Optativa IV,9,1,1
-45,Ética y Normatividad Jurídica,9,1,1
-46,Lógica de Programación y Pensamiento Computacional,1,1,2
-47,Arquitectura de Computadoras,1,1,2
-48,Matemáticas Discretas,1,1,2
-49,Fundamentos de Redes,1,1,2
-50,Introducción a la Informática,1,1,2
-51,Laboratorio de Sistemas Operativos,1,1,2
-52,Programación Estructurada,2,1,2
-53,Fundamentos de Bases de Datos,2,1,2
-54,Álgebra Lineal,2,1,2
-55,Redes de Computadoras,2,1,2
-56,Diseño de Interfaces de Usuario,2,1,2
-57,Entornos de Desarrollo para Programación,2,1,2
-58,Estructura de Datos,3,1,2
-59,Manejadores y Lenguajes de Consulta de Datos,3,1,2
-60,Matemáticas Aplicadas,3,1,2
-61,Administración de Redes,3,1,2
-62,Análisis y Diseño de Software,3,1,2
-63,Desarrollo Web del Lado del Servidor,3,1,2
-64,Paradigmas de Programación,4,1,2
-65,Bases de Datos Emergentes,4,1,2
-66,Probabilidad y Estadística,4,1,2
-67,Ciberseguridad,4,1,2
-68,Desarrollo e Implementación de Sistemas,4,1,2
-69,Desarrollo Web del Lado Cliente,4,1,2
-70,Cómputo en la Nube,5,1,2
-71,Minería de Datos,5,1,2
-72,Fundamentos de Inteligencia Artificial,5,1,2
-73,Introducción a la Investigación en Informática,5,1,2
-74,Ingeniería de Software,5,1,2
-75,Pruebas de Software,5,1,2
-76,Programación para Procesamiento de Datos,6,1,2
-77,Innovaciones Tecnológicas,6,1,2
-78,Aprendizaje Automático,6,1,2
-79,Modelos de Calidad de Software,6,1,2
-80,Cómputo Móvil,6,1,2
-81,"Desarrollo, Seguridad y Operación de Sistemas",6,1,2
-82,Administración de Recursos Tecnológicos,7,1,2
-83,Emprendimiento Tecnológico,7,1,2
-84,Seminario de Proyectos de Investigación e Intervención,7,1,2
-85,Comercio Electrónico,7,1,2
-86,Programación Paralela y Distribuida,7,1,2
-87,Gestión de Seguridad y Desempeño de Bases de Datos,7,1,2
-88,Lógica de Programación y Pensamiento Computacional,1,2,2
-89,Arquitectura de Computadoras,1,2,2
-90,Matemáticas Discretas,1,2,2
-91,Fundamentos de Redes,1,2,2
-92,Introducción a la Informática,1,2,2
-93,Laboratorio de Sistemas Operativos,1,2,2
-94,Programación Estructurada,2,2,2
-95,Fundamentos de Bases de Datos,2,2,2
-96,Álgebra Lineal,2,2,2
-97,Redes de Computadoras,2,2,2
-98,Diseño de Interfaces de Usuario,2,2,2
-99,Entornos de Desarrollo para Programación,2,2,2
-100,Estructura de Datos,3,2,2
-101,Manejadores y Lenguajes de Consulta de Datos,3,2,2
-102,Matemáticas Aplicadas,3,2,2
-103,Administración de Redes,3,2,2
-104,Análisis y Diseño de Software,3,2,2
-105,Desarrollo Web del Lado del Servidor,3,2,2
-106,Paradigmas de Programación,4,2,2
-107,Bases de Datos Emergentes,4,2,2
-108,Probabilidad y Estadística,4,2,2
-109,Ciberseguridad,4,2,2
-110,Desarrollo e Implementación de Sistemas,4,2,2
-111,Desarrollo Web del Lado Cliente,4,2,2
-112,Cómputo en la Nube,5,2,2
-113,Minería de Datos,5,2,2
-114,Fundamentos de Inteligencia Artificial,5,2,2
-115,Introducción a la Investigación en Informática,5,2,2
-116,Ingeniería de Software,5,2,2
-117,Pruebas de Software,5,2,2
-118,Programación para Procesamiento de Datos,6,2,2
-119,Innovaciones Tecnológicas,6,2,2
-120,Aprendizaje Automático,6,2,2
-121,Modelos de Calidad de Software,6,2,2
-122,Cómputo Móvil,6,2,2
-123,"Desarrollo, Seguridad y Operación de Sistemas",6,2,2
-124,Administración de Recursos Tecnológicos,7,2,2
-125,Emprendimiento Tecnológico,7,2,2
-126,Seminario de Proyectos de Investigación e Intervención,7,2,2
-127,Comercio Electrónico,7,2,2
-128,Programación Paralela y Distribuida,7,2,2
-129,Gestión de Seguridad y Desempeño de Bases de Datos,7,2,2
-130,Introducción a la Ciencia de Datos,1,3,2
-131,Laboratorio de Sistemas Operativos,1,3,2
-132,Matemáticas Discretas,1,3,2
-133,Pensamiento Computacional e Introducción a la Programación,1,3,2
-134,Cálculo,1,3,2
-135,Probabilidad,1,3,2
-136,Herramientas de Cómputo para Programación,2,3,2
-137,Fundamentos de Programación,2,3,2
-138,Estadística,2,3,2
-139,Álgebra Lineal,2,3,2
-140,Fundamentos de Redes,2,3,2
-141,Base de Datos,2,3,2
-142,Fundamentos de Programación con Lenguajes Secuenciales y Comandos,3,3,2
-143,Tópicos Especiales de Estadística,3,3,2
-144,Paradigmas de Programación Emergentes,3,3,2
-145,Estructura de Datos,3,3,2
-146,Investigación de Operaciones,3,3,2
-147,Modelación Matemática,3,3,2
-148,Programación para el Análisis Estadístico,4,3,2
-149,Teoría de la Computación,4,3,2
-150,Programación de Servicios,4,3,2
-151,Métodos Numéricos,4,3,2
-152,Programación Paralela,4,3,2
-153,Lenguajes de Consulta de Datos,4,3,2
-154,Herramientas de Cómputo en la Nube,5,3,2
-155,Programación para el Procesamiento y Análisis de Datos,5,3,2
-156,Inteligencia Artificial,5,3,2
-157,Programación de Interfaces Web,5,3,2
-158,Fundamentos de Biología Celular,5,3,2
-159,Matemáticas Financieras,5,3,2
-160,Procesamiento de Datos a Gran Escala,6,3,2
-161,Aprendizaje Automático,6,3,2
-162,Seguridad y Gobierno de Datos,6,3,2
-163,Bases de Datos Analíticas,6,3,2
-164,Análisis y Diseño de Algoritmos,6,3,2
-165,Emprendimiento de Base Tecnológica,6,3,2
-166,Visualización de Datos y Modelos,7,3,2
-167,Aprendizaje Profundo,7,3,2
-168,Ingeniería de Datos,7,3,2
-169,Bases de Datos Emergentes,7,3,2
-170,Optativa I,7,3,2
-171,Optativa II,7,3,2
-172,Minería de Datos,8,3,2
-173,Pruebas de Software,8,3,2
-174,Optativa III,8,3,2
-175,Optativa IV,8,3,2
-176,Introducción a la Investigación en Ciencia de Datos,8,3,2
-177,Taller Especializado,8,3,2
+id_materia,materia,id_semestre,id_licenciatura
+46,Lógica de Programación y Pensamiento Computacional,1,1
+47,Arquitectura de Computadoras,1,1
+48,Matemáticas Discretas,1,1
+49,Fundamentos de Redes,1,1
+50,Introducción a la Informática,1,1
+51,Laboratorio de Sistemas Operativos,1,1
+52,Programación Estructurada,2,1
+53,Fundamentos de Bases de Datos,2,1
+54,Álgebra Lineal,2,1
+55,Redes de Computadoras,2,1
+56,Diseño de Interfaces de Usuario,2,1
+57,Entornos de Desarrollo para Programación,2,1
+58,Estructura de Datos,3,1
+59,Manejadores y Lenguajes de Consulta de Datos,3,1
+60,Matemáticas Aplicadas,3,1
+61,Administración de Redes,3,1
+62,Análisis y Diseño de Software,3,1
+63,Desarrollo Web del Lado del Servidor,3,1
+64,Paradigmas de Programación,4,1
+65,Bases de Datos Emergentes,4,1
+66,Probabilidad y Estadística,4,1
+67,Ciberseguridad,4,1
+68,Desarrollo e Implementación de Sistemas,4,1
+69,Desarrollo Web del Lado Cliente,4,1
+70,Cómputo en la Nube,5,1
+71,Minería de Datos,5,1
+72,Fundamentos de Inteligencia Artificial,5,1
+73,Introducción a la Investigación en Informática,5,1
+74,Ingeniería de Software,5,1
+75,Pruebas de Software,5,1
+76,Programación para Procesamiento de Datos,6,1
+77,Innovaciones Tecnológicas,6,1
+78,Aprendizaje Automático,6,1
+79,Modelos de Calidad de Software,6,1
+80,Cómputo Móvil,6,1
+81,"Desarrollo, Seguridad y Operación de Sistemas",6,1
+82,Administración de Recursos Tecnológicos,7,1
+83,Emprendimiento Tecnológico,7,1
+84,Seminario de Proyectos de Investigación e Intervención,7,1
+85,Comercio Electrónico,7,1
+86,Programación Paralela y Distribuida,7,1
+87,Gestión de Seguridad y Desempeño de Bases de Datos,7,1
+130,Introducción a la Ciencia de Datos,1,3
+131,Laboratorio de Sistemas Operativos,1,3
+132,Matemáticas Discretas,1,3
+133,Pensamiento Computacional e Introducción a la Programación,1,3
+134,Cálculo,1,3
+135,Probabilidad,1,3
+136,Herramientas de Cómputo para Programación,2,3
+137,Fundamentos de Programación,2,3
+138,Estadística,2,3
+139,Álgebra Lineal,2,3
+140,Fundamentos de Redes,2,3
+141,Base de Datos,2,3
+142,Fundamentos de Programación con Lenguajes Secuenciales y Comandos,3,3
+143,Tópicos Especiales de Estadística,3,3
+144,Paradigmas de Programación Emergentes,3,3
+145,Estructura de Datos,3,3
+146,Investigación de Operaciones,3,3
+147,Modelación Matemática,3,3
+148,Programación para el Análisis Estadístico,4,3
+149,Teoría de la Computación,4,3
+150,Programación de Servicios,4,3
+151,Métodos Numéricos,4,3
+152,Programación Paralela,4,3
+153,Lenguajes de Consulta de Datos,4,3
+154,Herramientas de Cómputo en la Nube,5,3
+155,Programación para el Procesamiento y Análisis de Datos,5,3
+156,Inteligencia Artificial,5,3
+157,Programación de Interfaces Web,5,3
+158,Fundamentos de Biología Celular,5,3
+159,Matemáticas Financieras,5,3
+160,Procesamiento de Datos a Gran Escala,6,3
+161,Aprendizaje Automático,6,3
+162,Seguridad y Gobierno de Datos,6,3
+163,Bases de Datos Analíticas,6,3
+164,Análisis y Diseño de Algoritmos,6,3
+165,Emprendimiento de Base Tecnológica,6,3
+166,Visualización de Datos y Modelos,7,3
+167,Aprendizaje Profundo,7,3
+168,Ingeniería de Datos,7,3
+169,Bases de Datos Emergentes,7,3
+170,Optativa I,7,3
+171,Optativa II,7,3
+172,Minería de Datos,8,3
+173,Pruebas de Software,8,3
+174,Optativa III,8,3
+175,Optativa IV,8,3
+176,Introducción a la Investigación en Ciencia de Datos,8,3
+177,Taller Especializado,8,3

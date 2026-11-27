@@ -11,12 +11,16 @@ return new class extends Migration
         Schema::create('grupos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('licenciatura_id')->constrained('licenciaturas');
-            // Ej. "4-1", "5-2"
+            // Ej. "4-1": año 4, grupo 1
             $table->string('nombre', 20);
+            // Año que cursa el grupo (el número antes del guion). Cada año = 2 semestres
+            $table->unsignedTinyInteger('anio');
+            // presencial o virtual: Informática tiene grupos de ambos tipos
+            $table->string('modalidad', 20)->default('presencial');
             $table->timestamps();
 
-            // Un mismo nombre no debe repetirse dentro de la misma licenciatura
-            $table->unique(['licenciatura_id', 'nombre']);
+            // El mismo nombre puede existir una vez en presencial y otra en virtual
+            $table->unique(['licenciatura_id', 'modalidad', 'nombre']);
         });
     }
 

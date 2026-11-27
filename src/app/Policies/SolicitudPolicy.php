@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\Solicitud;
+use App\Models\Usuario;
+
+class SolicitudPolicy
+{
+    // ¿Este usuario puede cancelar esta solicitud? Devuelve true o false.
+    // false → Laravel responde 403 solo.
+    public function cancelar(Usuario $usuario, Solicitud $solicitud): bool
+    {
+        // Solo el estudiante que la creó. Se compara por id, no por rol,
+        // así un asesor par no puede tocar solicitudes de otros.
+        return $solicitud->estudiante_id === $usuario->id;
+    }
+
+    
+    public function editar(Usuario $usuario, Solicitud $solicitud): bool
+    {
+        return $solicitud->estudiante_id === $usuario->id;
+    }
+
+   // Solo el asesor al que se le hizo la solicitud, o el admin de la facultad en su lugar.
+// El admin llega aquí ya filtrado por FacultadScope: una solicitud de otra facultad da 404 antes.
+public function responder(Usuario $usuario, Solicitud $solicitud): bool
+{
+    return $solicitud->asesor_id === $usuario->id || $usuario->puedeAdministrar();
+}
+}

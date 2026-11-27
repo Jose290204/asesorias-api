@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AsesorController;
 use App\Http\Controllers\Api\V1\AsesoriaController;
+use App\Http\Controllers\Api\V1\CalendarioController;
 use App\Http\Controllers\Api\V1\CatalogoController;
 use App\Http\Controllers\Api\V1\DisponibilidadController;
 use App\Http\Controllers\Api\V1\MateriaController;
@@ -145,6 +146,7 @@ Route::prefix('estudiante')
         Route::post('/solicitudes/{solicitud}/cancelar', [SolicitudController::class, 'cancelar']);
         Route::patch('/solicitudes/{solicitud}', [SolicitudController::class, 'editar']);
         Route::get('/asesorias', [AsesoriaController::class, 'index'])->defaults('como', 'estudiante');
+        Route::get('/calendario', [CalendarioController::class, 'index'])->defaults('como', 'estudiante');
     });
 
 
@@ -160,6 +162,7 @@ Route::prefix('asesor')
         Route::post('/solicitudes/{solicitud}/rechazar', [SolicitudController::class, 'rechazar']);
         Route::post('/solicitudes/{solicitud}/aceptar', [SolicitudController::class, 'aceptar']);
         Route::get('/asesorias', [AsesoriaController::class, 'index'])->defaults('como', 'asesor');
+        Route::get('/calendario', [CalendarioController::class, 'index'])->defaults('como', 'asesor');
         Route::post('/asesorias/{asesoria}/completar', [AsesoriaController::class, 'completar']);
         Route::post('/asesorias/{asesoria}/cancelar', [AsesoriaController::class, 'cancelar']);
         Route::post('/asesorias', [AsesoriaController::class, 'crear']);

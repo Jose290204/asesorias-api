@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             LicenciaturaSeeder::class,
             HorarioSeeder::class,
             CicloEscolarSeeder::class,
+            DiasInhabilesSeeder::class,   // vacaciones y suspensiones del calendario escolar
             GrupoSeeder::class,           // necesita database/seeders/data/grupos.csv
             MateriaSeeder::class,         // necesita database/seeders/data/materias.csv
         ]);

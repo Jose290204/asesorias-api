@@ -12,6 +12,10 @@ use Carbon\CarbonInterface;
 // cada semana, el mismo día y horario de su fecha de inicio, hasta el fin de su ciclo.
 class CalendarioService
 {
+    public function __construct(private DiasHabilesService $diasHabiles)
+    {
+    }
+
     /**
      * @param  string  $como  'estudiante' o 'asesor' (lo pone la ruta)
      * @return array<int, array<string, mixed>>
@@ -28,6 +32,9 @@ class CalendarioService
             ->get();
 
         $salida = [];
+
+        // Vacaciones y suspensiones: esas semanas no hay sesión
+        $inhabiles = $this->diasHabiles->rango($usuario->facultad_id, $desde, $hasta);
 
         foreach ($asesorias as $asesoria) {
             $inicio = $asesoria->fecha_inicio->copy()->startOfDay();
@@ -49,6 +56,10 @@ class CalendarioService
 
             for (; $dia->lte($tope); $dia->addWeek()) {
                 $fecha = $dia->toDateString();
+
+                if (DiasHabilesService::cubre($inhabiles, $fecha)) {
+                    continue;
+                }
 
                 $salida[] = [
                     'asesoria_id' => $asesoria->id,

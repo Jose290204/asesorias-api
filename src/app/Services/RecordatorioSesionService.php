@@ -20,6 +20,10 @@ use Throwable;
 // y no se repite (se revisa en las notificaciones). Si el scheduler se detiene un rato, se pone al corriente.
 class RecordatorioSesionService
 {
+    public function __construct(private DiasHabilesService $diasHabiles)
+    {
+    }
+
     private const HORA_MANANA = '09:30';
 
     // El aviso de la mañana solo sale si la sesión empieza después de esta hora; si no, quedaría pegado
@@ -54,6 +58,10 @@ class RecordatorioSesionService
                 continue;
             }
             if ($asesoria->sesiones->isNotEmpty()) {
+                continue;
+            }
+            // Vacaciones o suspensión: ese día no hay sesión
+            if ($this->diasHabiles->motivo($asesoria->facultad_id, $hoy)) {
                 continue;
             }
 

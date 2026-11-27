@@ -22,7 +22,7 @@ use App\Support\Avisos;           // NUEVO
 
 class AsesoriaService
 {
-    public function __construct(private EstudianteService $estudiantes)
+    public function __construct(private EstudianteService $estudiantes, private DiasHabilesService $diasHabiles)
     {
     }
 
@@ -151,6 +151,9 @@ class AsesoriaService
             if ($fecha->lt($ciclo->fecha_inicio) || $fecha->gt($ciclo->fecha_fin)) {
                 throw ErrorDeNegocio::invalido('La fecha queda fuera del ciclo escolar vigente.', 'fuera_de_ciclo');
             }
+
+            // Lunes a viernes y fuera de vacaciones o suspensiones del calendario de la facultad
+            $this->diasHabiles->validar($asesor->facultad_id, $fecha);
 
             $this->validarQueOfrece($asesor, $datos);
             $this->validarHorarioLibre($asesor->id, Dia::desdeFecha($fecha), (int) $datos['horario_id']);
@@ -344,6 +347,8 @@ class AsesoriaService
         if ($fecha->lt($ciclo->fecha_inicio) || $fecha->gt($ciclo->fecha_fin)) {
             throw ErrorDeNegocio::invalido('La fecha queda fuera del ciclo escolar vigente.', 'fuera_de_ciclo');
         }
+
+        $this->diasHabiles->validar($asesoria->facultad_id, $fecha);
 
         // min() sobre la relación devuelve la fecha más antigua como texto, o null si no hay sesiones
         $primera = $asesoria->sesiones()->min('fecha');

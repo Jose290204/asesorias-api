@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\AsesorController;
 use App\Http\Controllers\Api\V1\AsesoriaController;
 use App\Http\Controllers\Api\V1\CalendarioController;
 use App\Http\Controllers\Api\V1\CatalogoController;
+use App\Http\Controllers\Api\V1\DiaInhabilController;
 use App\Http\Controllers\Api\V1\DisponibilidadController;
 use App\Http\Controllers\Api\V1\MateriaController;
 use App\Http\Controllers\Api\V1\PerfilController;
@@ -53,6 +54,7 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::get('/catalogos', [CatalogoController::class, 'catalogos']);
     Route::get('/materias', [MateriaController::class, 'index']);
+    Route::get('/dias-inhabiles', [DiaInhabilController::class, 'index']);
     Route::get('/asesorias/{asesoria}/sesiones', [SesionController::class, 'index']);
     Route::get('/asesorias/{asesoria}/material', [MaterialController::class, 'index']);
     Route::get('/evidencias/{evidencia}/descargar', [EvidenciaController::class, 'descargar']);

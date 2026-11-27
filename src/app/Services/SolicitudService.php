@@ -23,7 +23,7 @@ class SolicitudService
 {
     // AsesorService ya trae encontrar(), que aplica el mismo filtro que la lista:
     // existe, misma facultad, activo, con disponibilidad, nunca el propio estudiante
-    public function __construct(private AsesorService $asesores)
+    public function __construct(private AsesorService $asesores, private DiasHabilesService $diasHabiles)
     {
     }
 
@@ -40,6 +40,9 @@ class SolicitudService
         if ($dia === null) {
             throw ErrorDeNegocio::invalido('Ese día no se ofrecen asesorías.', 'dia_no_disponible');
         }
+
+        // Vacaciones y suspensiones del calendario de la facultad
+        $this->diasHabiles->validar($estudiante->facultad_id, $fecha);
 
         $this->validarQueOfrece($asesor, $datos, $dia);
 
@@ -367,6 +370,11 @@ class SolicitudService
 
             if ($dia === null) {
                 throw ErrorDeNegocio::invalido('Ese día no se ofrecen asesorías.', 'dia_no_disponible');
+            }
+
+            // Solo si la fecha cambia: editar otro dato no debe fallar por un día que se volvió inhábil
+            if ($fecha->toDateString() !== $actual->fecha_inicio->toDateString()) {
+                $this->diasHabiles->validar($estudiante->facultad_id, $fecha);
             }
 
             // La materia y la modalidad no cambian, pero se revalidan por si el asesor

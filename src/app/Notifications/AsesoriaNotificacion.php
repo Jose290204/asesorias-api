@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushMessage;
 
 // Avisos de una asesoría (y de su chat). Igual que SolicitudNotificacion: recibe datos sueltos,
 // no modelos, porque el worker de la cola no tiene usuario logueado.
@@ -54,6 +55,21 @@ class AsesoriaNotificacion extends Notification implements ShouldQueue
             ->line($this->mensaje())
             ->line('Entra a Asesorías FIC para ver los detalles.')
             ->salutation('Facultad de Informática Culiacán');
+    }
+
+    // Aviso push al dispositivo. Mismo texto que la campana.
+    public function toWebPush(object $notifiable, $notification): WebPushMessage
+    {
+        return (new WebPushMessage)
+            ->title($this->tipo->titulo())
+            ->icon('/icons/icon-192.png')
+            ->body($this->mensaje())
+            ->tag('asesoria-'.$this->asesoriaId) // avisos de la misma asesoría se reemplazan entre sí
+                        ->data([
+                'tipo' => $this->tipo->value,
+                'asesoria_id' => $this->asesoriaId,
+                'como' => $this->como,
+            ]);
     }
 
     private function mensaje(): string

@@ -50,6 +50,6 @@ enum TipoNotificacion: string
     // rechazada por cupo, asesoría cancelada y modificada.
     public function canales(): array
     {
-        return ['database'];
+         return ['database', \NotificationChannels\WebPush\WebPushChannel::class];
     }
 }

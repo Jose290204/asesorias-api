@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\AsesorAdminController;
 use App\Http\Controllers\Api\V1\ReporteController;
 use App\Http\Controllers\Api\V1\NotificacionController;
 use App\Http\Controllers\Api\V1\EvidenciaController;
+use App\Http\Controllers\Api\V1\PushSuscripcionController;
 use App\Services\ReporteService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\ConexionController;
@@ -70,6 +71,9 @@ Route::middleware(['auth:sanctum', 'activo', 'facultad'])->group(function () {
     Route::post('/notificaciones/{id}/leida', [NotificacionController::class, 'marcarLeida']);
     Route::delete('/notificaciones', [NotificacionController::class, 'borrarTodas']);
     Route::delete('/notificaciones/{id}', [NotificacionController::class, 'borrar']);
+    Route::get('/push/clave', [PushSuscripcionController::class, 'clave']);
+    Route::post('/push/suscripcion', [PushSuscripcionController::class, 'guardar']);
+    Route::delete('/push/suscripcion', [PushSuscripcionController::class, 'borrar']);
 });
 
 

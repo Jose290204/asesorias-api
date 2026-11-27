@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushMessage;
 
 // Avisos de solicitudes: el enum decide el título y los canales.
 // ShouldQueue: la campanita (y el correo, cuando se active) los escribe el contenedor "queue",
@@ -57,6 +58,16 @@ class SolicitudNotificacion extends Notification implements ShouldQueue
             ->line($this->mensaje())
             ->line('Entra a Asesorías FIC para ver los detalles.')
             ->salutation('Facultad de Informática Culiacán');
+    }
+
+    public function toWebPush(object $notifiable, $notification): WebPushMessage
+    {
+        return (new WebPushMessage)
+            ->title($this->tipo->titulo())
+            ->icon('/icons/icon-192.png')
+            ->body($this->mensaje())
+            ->tag('solicitud-'.$this->solicitudId)
+            ->data(['tipo' => $this->tipo->value, 'solicitud_id' => $this->solicitudId]);
     }
 
     private function mensaje(): string

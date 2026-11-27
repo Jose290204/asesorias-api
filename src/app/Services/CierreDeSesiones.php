@@ -23,5 +23,11 @@ class CierreDeSesiones
             ->delete();
 
         DB::table('sessions')->whereIn('user_id', $ids)->delete();
+
+        // NUEVO: sin sesión no deben seguir llegando avisos push a sus dispositivos
+        DB::table('push_subscriptions')
+            ->where('subscribable_type', (new Usuario)->getMorphClass())
+            ->whereIn('subscribable_id', $ids)
+            ->delete();
     }
 }
